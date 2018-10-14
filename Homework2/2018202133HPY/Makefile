@@ -4,7 +4,10 @@ OBJ_NO_MAIN = ${patsubst src/%.c, tmp/no_main_%.o, $(SRC)}
 CFLAGS = -O2 -fPIC -Wall -fno-strict-aliasing
 override NUMBER = 10000
 
-all : clean bin shared
+all : tmp clean bin shared
+
+tmp :
+	mkdir -p tmp
 
 bin : $(OBJ_MAIN) double_t_test
 
