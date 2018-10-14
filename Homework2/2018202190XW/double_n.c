@@ -109,6 +109,7 @@ void generate_input();
 void begin_test();
 void c_double();
 void my_double_n();
+void extra_test();
 
 int main() {
 	srand(time(0));
@@ -118,6 +119,7 @@ int main() {
 //	rand_test();
 	generate_input();
 	begin_test();
+	extra_test();
 	return 0;
 }
 
@@ -750,11 +752,43 @@ void my_double_n() {
 			ret = div_n(a, b);
 		}
 		rev_ret = rev_double_n(ret);
-		r_ret = *(double*) &rev_ret;
-		fprintf(output0, "%le\n", r_ret);
-		fprintf(output1, "%.50le\n", r_ret);
+		fprintf(output0, "%le\n", *(double*) &rev_ret);
+		fprintf(output1, "%.50le\n", *(double*) &rev_ret);
 	}
 	fclose(input);
 	fclose(output0);
 	fclose(output1);
+}
+void extra_test() {
+	double r_a, r_b, r_ret;
+	struct double_n a, b, ret, rev_ret;
+	char s[10];
+	printf("Please input the expression(input \"0 v 0\" to exit):\n");
+	scanf("%lf%s%lf", &r_a, s, &r_b);
+	a = rev_double(r_a);
+	b = rev_double(r_b);
+	if (s[0] == '+') {
+		ret = add_n(a, b);
+		r_ret = r_a + r_b;
+	}
+	if (s[0] == '-') {
+		ret = sub_n(a, b);
+		r_ret = r_a - r_b;
+	}
+	if (s[0] == '*') {
+		ret = mul_n(a, b);
+		r_ret = r_a * r_b;
+	}
+	if (s[0] == '/') {
+		ret = div_n(a, b);
+		r_ret = r_a / r_b;
+	}
+	if (s[0] == 'v') return;
+	rev_ret = rev_double_n(ret);
+	printf("c_double0  : %le\n", r_ret);
+	printf("my_double0 : %le\n", *(double*) &rev_ret);
+	printf("c_double1  : %.50le\n", r_ret);
+	printf("my_double1 : %.50le\n", *(double*) &rev_ret);
+	extra_test();
+	return;
 }
