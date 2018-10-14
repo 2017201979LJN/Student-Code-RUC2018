@@ -1,5 +1,5 @@
 # Description
-This is a sample homework simusimulating the IEEE 754 standard floating number operations.
+This is a simple homework simusimulating the IEEE 754 standard floating number operations.
 
 # Usage
 
