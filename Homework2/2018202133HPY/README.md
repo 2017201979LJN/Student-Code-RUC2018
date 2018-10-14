@@ -3,12 +3,12 @@ This is a sample homework simusimulating the IEEE 754 standard floating number o
 
 # Usage
 
-## Build Binaries only
+## Build Binaries Only
 ```
 $ make
 ```
 
-## Run tests
+## Run Tests
 ```
 $ make test
 ```
