@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdint.h>
 
 #define swap(a,b) a ^= b ^= a ^=b
 #define bigint __uint128_t
-
-const unsigned int bias = 1023;
 
 struct double_n{
     unsigned char bytes[8];
@@ -21,7 +20,7 @@ struct double_n read_input()
 void print_double (struct double_n v)
 {
     double *output_double = &v;
-    printf ("%.30lf\n", *output_double);
+    printf ("%.50le\n", *output_double);
 }
 
 void init_double (struct double_n *v)
@@ -98,24 +97,6 @@ struct double_n cast_to_double (int sign, unsigned int exp, unsigned long long f
     return v;
 }
 
-unsigned long long shift_right (unsigned long long v, int len)
-{
-    unsigned long long remain = v % (1ll << len);
-    unsigned long long round_stand = (1ll << (len - 1));
-    if (remain > round_stand)
-        return (v >> len) + 1;
-    else if (remain < round_stand)
-        return v >> len;
-    else 
-    {
-        if (v & (1ll << len))
-            return (v >> len) + 1;
-        else 
-            return v >> len;
-    }
-}
-
-
 unsigned long long rounding (unsigned int *exp, bigint frac, int len)
 {
     unsigned int e = frac >> len;
@@ -145,14 +126,14 @@ unsigned long long rounding (unsigned int *exp, bigint frac, int len)
         bigint round_stand = (1ll << (remain - 1));
         bigint frac_remain = frac % (1ll << remain);
         if ( (frac_remain > round_stand) || ( (frac_remain == round_stand) && (frac & (1ll << remain) ) ) ){
-            if (is_de)
-                e = 1;
             frac = frac >> remain;
             frac ++;
         }
         else
             frac = frac >> remain;
-        e = frac >> len;
+        e = frac >> 52;
+        if (is_de && e)
+            *exp = 1;
         if (e > 1)
         {
             *exp = *exp + 1;
@@ -190,10 +171,6 @@ struct double_n add_same_sign (struct double_n v1, struct double_n v2)
         frac2 += (1ll << 52);
     unsigned int exp = exp1;
     unsigned long long frac = rounding (&exp, ( (bigint) frac1 << expdif) + frac2, 52 + expdif);
-    /*frac2 = shift_right (frac2, expdif);
-    unsigned long long frac = frac1 + frac2;
-    int exp = (frac >> 52) + exp1 - 1;
-    frac = frac % (1ll << 52);*/
     if ( exp >= 2047 ){
         exp = 2047;
         frac = 0;
@@ -252,14 +229,6 @@ struct double_n substract (struct double_n v1, struct double_n v2)
     int sign = v2.bytes[7] >> 7;
     v2.bytes[7] = v2.bytes[7] - (sign << 7) + ( (sign ^ 1) << 7);
     return add (v1, v2);
-}
-
-print_bigint (bigint v)
-{
-    long long v1 = (v >> 64);
-    long long v2 = v;
-    print_2_base (v1, 64);
-    print_2_base (v2, 64);
 }
 
 struct double_n multiply (struct double_n v1, struct double_n v2)
@@ -342,44 +311,7 @@ struct double_n divide (struct double_n v1, struct double_n v2)
     return cast_to_double (sign1 * sign2, exp, frac);
 }
 
-void print_2_base (unsigned long long v, int len)
-{
-    int s[100];
-    int top = 0;
-    while (v){
-        top ++;
-        if (v & 1)
-            s[top] = 1;
-        else
-            s[top] = 0;
-        v = (v >> 1);
-    }
-    for (int i = len; i > top; i--)
-        printf("0");
-    while (top){
-        printf("%d", s[top]);
-        top --;
-    }
-    printf("\n");
-}
-
-void print_double_2_base (struct double_n v)
-{
-    printf("%d\n", get_sign (v) );
-    print_2_base (get_exp (v), 11);
-    print_2_base (get_frac (v), 52);
-}
-
 int main()
 {
-    freopen("double_n.in", "r", stdin);
-    freopen("double_n.out","w",stdout);
-    struct double_n a=read_input(), b=read_input();
-    struct double_n c = add (a,b);
-    print_double (c);
-    c = multiply (a,b);
-    print_double (c);
-    c = divide (a,b);
-    print_double (c);
     return 0;
 }
