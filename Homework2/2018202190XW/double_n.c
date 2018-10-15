@@ -117,7 +117,7 @@ int main() {
 //	srand(20000511);
 	init();
 //	extreme_test();
-	rand_test();
+//	rand_test();
 	generate_input();
 	begin_test();
 	extra_test();
