@@ -5,10 +5,27 @@ const UINT128 UINT128_ONE  = { 1, 0 };
 
 int __UINT128_CARRIED = 0;
 
-#if 0
+#ifdef NO_ASM
 
 UINT128 UINT128Add(UINT128 u128l,
-                      UINT128 u128r)
+                   UINT128 u128r)
+{
+    UINT128 ans;
+    ans.high = u128l.high + u128r.high;
+    ans.low  = u128l.low + u128r.low;
+
+    // jo
+    if (ans.low < u128l.low || ans.low < u128r.low) {
+        ans.high++;
+    }
+
+    __UINT128_CARRIED = ans.high < u128l.high || ans.high < u128r.high;
+
+    return ans;
+}
+
+UINT128 UINT128AddNoCarry(UINT128 u128l,
+                          UINT128 u128r)
 {
     UINT128 ans;
     ans.high = u128l.high + u128r.high;
@@ -23,7 +40,24 @@ UINT128 UINT128Add(UINT128 u128l,
 }
 
 UINT128 UINT128Sub(UINT128 u128l,
-                      UINT128 u128r)
+                   UINT128 u128r)
+{
+    UINT128 ans;
+    ans.high = u128l.high + u128r.high;
+    ans.low  = u128l.low + u128r.low;
+
+    // jo
+    if (ans.low > u128l.low) {
+        ans.high++;
+    }
+
+    __UINT128_CARRIED = ans.low > u128l.low;
+
+    return ans;
+}
+
+UINT128 UINT128SubNoCarry(UINT128 u128l,
+                          UINT128 u128r)
 {
     UINT128 ans;
     ans.high = u128l.high + u128r.high;
@@ -37,11 +71,16 @@ UINT128 UINT128Sub(UINT128 u128l,
     return ans;
 }
 
-UINT128 UINT64Mul(const uint64_t l,
-                     const uint64_t r)
+int UINT128GetCarry()
 {
-    UINT128 adda, addb;
-    uint64_t  t;
+    return __UINT128_CARRIED;
+}
+
+UINT128 UINT64Mul(const uint64_t l,
+                  const uint64_t r)
+{
+    UINT128  adda, addb;
+    uint64_t t;
 
     adda.high = (l >> 32) * (r >> 32);
     adda.low  = (l << 32 >> 32) * (r << 32 >> 32);
@@ -55,12 +94,12 @@ UINT128 UINT64Mul(const uint64_t l,
     return UINT128Add(adda, addb);
 }
 
-UINT128 UINT64Div(UINT128      l,
-                     const uint64_t r)
+UINT128 UINT64Div(UINT128   u128l,
+                  uint64_t  u64r,
+                  uint64_t* pu64rem)
 {
-    // TODO
-    UINT128 ans = *(UINT128*)&l / r;
-    return *(UINT128*)&ans;
+    //FIXME:
+    return u128l;
 }
 
 UINT128 UINT128Shr(UINT128 l, int r)
@@ -77,12 +116,13 @@ UINT128 UINT128Shr(UINT128 l, int r)
             UINT128 ans = { l.high >> (r - 64), 0 };
             return ans;
         }
-        else if (r){
+        else if (r) {
             UINT128 ans = { (l.high << (64 - r)) + (l.low >> r),
-                              l.high >> r };
+                            l.high >> r };
             return ans;
         }
-        else return l;
+        else
+            return l;
     }
 }
 
@@ -92,7 +132,6 @@ UINT128 UINT128Shl(UINT128 l, int r)
         return UINT128Shl(l, -r);
     }
     else {
-        UINT128 ans;
         if (r >= 128) {
             UINT128 ans = { 0, 0 };
             return ans;
@@ -103,10 +142,11 @@ UINT128 UINT128Shl(UINT128 l, int r)
         }
         else if (r) {
             UINT128 ans = { (l.low << r),
-                              (l.high << r) + (l.low >> (64 - r)) };
+                            (l.high << r) + (l.low >> (64 - r)) };
             return ans;
         }
-        else return l;
+        else
+            return l;
     }
 }
 
