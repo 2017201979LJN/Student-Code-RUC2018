@@ -1,0 +1,16 @@
+This hint aims at explainning my "Double Simulator".
+Just run the EXCUTABLE FILE compiled from the source code.
+Input 1 to summon 20000 groups of numbers and operators randomly.
+10000 of them are actually randomly summoned.
+Other 10000 of them are combined to cater to the addition and subtraction operation.
+The result is outputed into the file "Result.out".
+(INF and NaN included but 10000 groups ... I can work more but slowly.)
+Input 2 to finish the formula you typed from the standard input.
+The format of the formula is "number1 operator number2 '='"
+For example: 1e100 * 1.5e210 = (enter)
+
+both of the output of the two operations are:
+simulated result in scientific representation  simulated result with 25 numbers after the dot
+real      result in scientific representation  real      result with 25 numbers after the dot
+
+have fun.
