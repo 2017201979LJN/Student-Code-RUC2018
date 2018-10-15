@@ -9,11 +9,11 @@ all : tmp clean bin shared
 tmp :
 	mkdir -p tmp
 
-bin : $(OBJ_MAIN) double_t_test
+bin : tmp $(OBJ_MAIN) double_t_test
 
-shared: $(OBJ_NO_MAIN) double_t_test.so
+shared: tmp $(OBJ_NO_MAIN) double_t_test.so
 
-gen :
+gen : 
 	$(RM) gen
 	$(CC) $(CFLAGS) gen.c -o gen
 
