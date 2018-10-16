@@ -14,7 +14,7 @@ echo `wc -l < tmp/ans.out` lines readed / `wc -l < tmp/sample.out` lines expecte
 echo `diff -b tmp/sample.out tmp/ans.out | grep '>' | wc -l` lines different
 
 if diff -b tmp/sample.out tmp/ans.out ; then
-    echo -e '\e[5;32;45mAccepted\e[0m'
+    echo -e '\033[5;32;45mAccepted\033[0m'
 else
-    echo -e '\e[1;4;31mWrong Answer\e[0m'
+    echo -e '\033[1;4;31mWrong Answer\033[0m'
 fi

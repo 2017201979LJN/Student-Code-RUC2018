@@ -5,7 +5,7 @@ OBJ_NO_MAIN_32 = ${patsubst src/%.c, tmp/no_main_32_%.o, $(SRC)}
 CFLAGS = -O2 -fPIC -Wall -fno-strict-aliasing
 override NUMBER = 10000
 
-all : tmp clean bin shared shared32
+all : tmp clean bin shared
 
 tmp :
 	mkdir -p tmp
