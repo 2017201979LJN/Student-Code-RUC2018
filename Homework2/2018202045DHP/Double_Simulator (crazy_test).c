@@ -17,7 +17,7 @@
 #define NUM_OF_FRAC_BITS 52
 #define LEN_OF_NUM 280
 #define BIAS 1023
-#define TARGET_CASES 20000
+#define TARGET_CASES 1
 
 struct Double {
 	unsigned char bytes[NUM_OF_BYTES];
@@ -220,6 +220,7 @@ struct Double Function_Addition (struct Double x1, struct Double x2){
 		if(flag) Temp.bytes[NUM_OF_BYTES - 1] ^= (1 << (LEN_OF_BYTES - 1));
 		return Temp;
 	}
+	
 	for(int i = FRAC_TOP_BYTE; i >= 0; i--)
 		for(int j = (i == FRAC_TOP_BYTE ? FRAC_TOP_BIT : (LEN_OF_BYTES - 1)); j >= 0; j--)
 			Temp.bytes[i] ^= answer[starting++] << j;
@@ -228,9 +229,7 @@ struct Double Function_Addition (struct Double x1, struct Double x2){
 			Temp.bytes[i] ^= (power1 & 1) << j;
 			power1 >>= 1;
 		}
-	
 	return Temp;
-	
 }
 
 //This function can finish the subtraction operation
@@ -801,19 +800,13 @@ struct Double Function_Division (struct Double x1, struct Double x2){
 }
 
 int main () {
-	int option;
-	printf("Please input the number explained in the README to switch your option.\n");
-	scanf("%d", &option);
-
-	if(option == 1){
-
-	freopen("Result.out","w",stdout);
+//	freopen("Result.out","w",stdout);
 	srand (time (NULL));
 	ZERO = Function_Transform_Double_to_Bytes (0.0);
 	NaN = Function_Transform_Double_to_Bytes (0.0 / 0.0);
 	INFINITY = Function_Transform_Double_to_Bytes (1.0 / 0.0);	
 /*** begin of the loop ***/
-	for(int Test_Case = 1; Test_Case <= TARGET_CASES; Test_Case++) {
+	for(int Test_Case = 1; 1; Test_Case++) {
 /*** begin of the loop ***/
 	char operator;
 	double Real_x1, Tran_x1, Real_x2, Tran_x2;
@@ -822,45 +815,41 @@ int main () {
 	struct Double Sum, Difference, Product, Quotient;
 	if(Test_Case & 1) Double_Rand_Combining (&Real_x1, &Real_x2);
 	else Real_x1 = Double_Rand(), Real_x2 = Double_Rand();
-	operator = rand() % 4;
-	if(operator == 0) operator = '+';
-	if(operator == 1) operator = '-';
-	if(operator == 2) operator = '*';
-	if(operator == 3) operator = '/';
 //	scanf("%lf %c %lf\n", &Real_x1, &operator, &Real_x2);
 	Simu_x1 = Function_Transform_Double_to_Bytes (Real_x1);
 	Simu_x2 = Function_Transform_Double_to_Bytes (Real_x2);
+
 //	Show_Double (Simu_x1);
 //	Show_Double (Simu_x2);
 	Tran_x1 = Function_Transform_Bytes_to_Double (Simu_x1);
 	Tran_x2 = Function_Transform_Bytes_to_Double (Simu_x2);
-	if(operator == '+') {
+	if( 1 ) {
 		Sum = Function_Addition (Simu_x1, Simu_x2);
 //		Show_Double (Sum);
 		Simu_Sum = Function_Transform_Bytes_to_Double (Sum);
-		printf("%le %.25lf\n", Real_x1 + Real_x2, Real_x1 + Real_x2);
-		printf("%le %.25lf\n", Simu_Sum, Simu_Sum);
+//		printf("%.320lf\n\n", Real_x1 + Real_x2);
+//		printf("%.25lf\n", Simu_Sum);
 	}
-	if(operator == '-') {
+	if( 1 ) {
 		Difference = Function_Subtraction (Simu_x1, Simu_x2);
 //		Show_Double (Difference);
 		Simu_Difference = Function_Transform_Bytes_to_Double (Difference);
-		printf("%le %.25lf\n", Real_x1 - Real_x2, Real_x1 - Real_x2);
-		printf("%le %.25lf\n", Simu_Difference, Simu_Difference);
+//		printf("%.320lf\n\n", Real_x1 - Real_x2);
+//		printf("%.25lf\n", Simu_Difference);
 	}
-	if(operator == '*') {
+	if( 1 ) {
 		Product = Function_Multiplication (Simu_x1, Simu_x2);
 //		Show_Double (Product);
 		Simu_Product = Function_Transform_Bytes_to_Double (Product);
-		printf("%le %.25lf\n", Real_x1 * Real_x2, Real_x1 * Real_x2);
-		printf("%le %.25lf\n", Simu_Product, Simu_Product);
+//		printf("%.320lf\n\n", Real_x1 * Real_x2);
+//		printf("%.25lf\n", Simu_Product);
 	}
-	if(operator == '/') {
+	if( 1 ) {
 		Quotient = Function_Division (Simu_x1, Simu_x2);
 //		Show_Double (Quotient);
 		Simu_Quotient = Function_Transform_Bytes_to_Double (Quotient);
-		printf("%le %.25lf\n", Real_x1 / Real_x2, Real_x1 / Real_x2);
-		printf("%le %.25lf\n", Simu_Quotient, Simu_Quotient);
+//		printf("%.320lf\n\n", Real_x1 / Real_x2);
+//		printf("%.25lf\n", Simu_Quotient);
 	}
 
 /*	printf("%.320lf\n\n", Simu_Sum);
@@ -871,9 +860,10 @@ int main () {
 	printf("%.320lf\n\n", Real_x1 * Real_x2);
 	printf("%.320lf\n\n", Simu_Quotient);
 	printf("%.320lf\n\n", Real_x1 / Real_x2);
-		
+*/		
 
-	if(Real_x1 + Real_x2 != Simu_Sum && !(Simu_Sum != Simu_Sum) && !(Real_x1 + Real_x2 != Real_x1 + Real_x2)){
+	if(Real_x1 + Real_x2 != Simu_Sum){
+		if(!(Simu_Sum == Simu_Sum) && !(Real_x1 + Real_x2 == Real_x1 + Real_x2)) goto LAB1;
 		printf("Oops in Addition function\n");
 		printf("%.320lf\n\n", Simu_Sum);
 		printf("%.320lf\n\n", Real_x1 + Real_x2);
@@ -883,14 +873,17 @@ int main () {
 		Show_Double (Function_Transform_Double_to_Bytes (Real_x1 + Real_x2));
 		getchar();
 	}
-	if(Real_x1 - Real_x2 != Simu_Difference && !(Simu_Difference != Simu_Difference) && !(Real_x1 - Real_x2 != Real_x1 - Real_x2)){
+	LAB1:;
+	if(Real_x1 - Real_x2 != Simu_Difference){
+		if(!(Simu_Difference == Simu_Difference) && !(Real_x1 - Real_x2 == Real_x1 - Real_x2)) goto LAB2;
 		printf("Oops in Subtraction function\n");
 		printf("%.320lf\n\n", Simu_Difference);
 		printf("%.320lf\n\n", Real_x1 - Real_x2);
 		getchar();
 	}
-
-	if(Real_x1 * Real_x2 != Simu_Product && !(Simu_Product != Simu_Product) && !(Real_x1 * Real_x2 != Real_x1 * Real_x2)){
+	LAB2:;
+	if(Real_x1 * Real_x2 != Simu_Product){
+		if(!(Simu_Product == Simu_Product) && !(Real_x1 * Real_x2 == Real_x1 * Real_x2)) goto LAB3;
 		printf("Oops in Multiplication function\n");
 		printf("%.320lf\n\n", Simu_Product);
 		printf("%.320lf\n\n", Real_x1 * Real_x2);
@@ -901,8 +894,9 @@ int main () {
 	
 		getchar();
 	}
-
-	if(Real_x1 / Real_x2 != Simu_Quotient && !(Simu_Quotient != Simu_Quotient) && !(Real_x1 / Real_x2 != Real_x1 / Real_x2)){
+	LAB3:;
+	if(Real_x1 / Real_x2 != Simu_Quotient){
+		if(!(Simu_Quotient == Simu_Quotient) && !(Real_x1 / Real_x2 == Real_x1 / Real_x2)) goto LAB4;
 		printf("Oops in Division function\n");
 		printf("%.320lf\n\n", Simu_Quotient);
 		printf("%.320lf\n\n", Real_x1 / Real_x2);
@@ -912,116 +906,17 @@ int main () {
 		Show_Double (Function_Transform_Double_to_Bytes (Real_x1 / Real_x2));
 		getchar();	
 	}
+	LAB4:;
+	if(Test_Case % 10000 == 0) printf("%d cases checked\n", Test_Case);
 
-	if(Test_Case % 1000 == 0) printf("%d cases checked\n", Test_Case);
-*/
 
 /*** end of the loop ***/
 	}
 	return 0;
 /*** end of the loop ***/
-	} else if(option == 2){
-	
-	ZERO = Function_Transform_Double_to_Bytes (0.0);
-	NaN = Function_Transform_Double_to_Bytes (0.0 / 0.0);
-	INFINITY = Function_Transform_Double_to_Bytes (1.0 / 0.0);	
-	char operator;
-	double Real_x1, Tran_x1, Real_x2, Tran_x2;
-	struct Double Simu_x1, Simu_x2;
-	double Simu_Sum, Simu_Difference, Simu_Product, Simu_Quotient;
-	struct Double Sum, Difference, Product, Quotient;
-//	if(Test_Case & 1) Double_Rand_Combining (&Real_x1, &Real_x2);
-//	else Real_x1 = Double_Rand(), Real_x2 = Double_Rand();
-	scanf("%lf %c %lf\n", &Real_x1, &operator, &Real_x2);
-	Simu_x1 = Function_Transform_Double_to_Bytes (Real_x1);
-	Simu_x2 = Function_Transform_Double_to_Bytes (Real_x2);
-//	Show_Double (Simu_x1);
-//	Show_Double (Simu_x2);
-	Tran_x1 = Function_Transform_Bytes_to_Double (Simu_x1);
-	Tran_x2 = Function_Transform_Bytes_to_Double (Simu_x2);
-	if(operator == '+') {
-		Sum = Function_Addition (Simu_x1, Simu_x2);
-//		Show_Double (Sum);
-		Simu_Sum = Function_Transform_Bytes_to_Double (Sum);
-		printf("%le %.25lf\n", Real_x1 + Real_x2, Real_x1 + Real_x2);
-		printf("%le %.25lf\n", Simu_Sum, Simu_Sum);
-	}
-	if(operator == '-') {
-		Difference = Function_Subtraction (Simu_x1, Simu_x2);
-//		Show_Double (Difference);
-		Simu_Difference = Function_Transform_Bytes_to_Double (Difference);
-		printf("%le %.25lf\n", Real_x1 - Real_x2, Real_x1 - Real_x2);
-		printf("%le %.25lf\n", Simu_Difference, Simu_Difference);
-	}
-	if(operator == '*') {
-		Product = Function_Multiplication (Simu_x1, Simu_x2);
-//		Show_Double (Product);
-		Simu_Product = Function_Transform_Bytes_to_Double (Product);
-		printf("%le %.25lf\n", Real_x1 * Real_x2, Real_x1 * Real_x2);
-		printf("%le %.25lf\n", Simu_Product, Simu_Product);
-	}
-	if(operator == '/') {
-		Quotient = Function_Division (Simu_x1, Simu_x2);
-//		Show_Double (Quotient);
-		Simu_Quotient = Function_Transform_Bytes_to_Double (Quotient);
-		printf("%le %.25lf\n", Real_x1 / Real_x2, Real_x1 / Real_x2);
-		printf("%le %.25lf\n", Simu_Quotient, Simu_Quotient);
-	}
-
-/*	printf("%.320lf\n\n", Simu_Sum);
-	printf("%.320lf\n\n", Real_x1 + Real_x2);
-	printf("%.320lf\n\n", Simu_Difference);
-	printf("%.320lf\n\n", Real_x1 - Real_x2);
-	printf("%.320lf\n\n", Simu_Product);
-	printf("%.320lf\n\n", Real_x1 * Real_x2);
-	printf("%.320lf\n\n", Simu_Quotient);
-	printf("%.320lf\n\n", Real_x1 / Real_x2);
-		
-
-	if(Real_x1 + Real_x2 != Simu_Sum && !(Simu_Sum != Simu_Sum) && !(Real_x1 + Real_x2 != Real_x1 + Real_x2)){
-		printf("Oops in Addition function\n");
-		printf("%.320lf\n\n", Simu_Sum);
-		printf("%.320lf\n\n", Real_x1 + Real_x2);
-		Show_Double (Simu_x1);
-		Show_Double (Simu_x2);
-		Show_Double (Sum);
-		Show_Double (Function_Transform_Double_to_Bytes (Real_x1 + Real_x2));
-		getchar();
-	}
-	if(Real_x1 - Real_x2 != Simu_Difference && !(Simu_Difference != Simu_Difference) && !(Real_x1 - Real_x2 != Real_x1 - Real_x2)){
-		printf("Oops in Subtraction function\n");
-		printf("%.320lf\n\n", Simu_Difference);
-		printf("%.320lf\n\n", Real_x1 - Real_x2);
-		getchar();
-	}
-
-	if(Real_x1 * Real_x2 != Simu_Product && !(Simu_Product != Simu_Product) && !(Real_x1 * Real_x2 != Real_x1 * Real_x2)){
-		printf("Oops in Multiplication function\n");
-		printf("%.320lf\n\n", Simu_Product);
-		printf("%.320lf\n\n", Real_x1 * Real_x2);
-		Show_Double (Simu_x1);
-		Show_Double (Simu_x2);
-		Show_Double (Product);
-		Show_Double (Function_Transform_Double_to_Bytes (Real_x1 * Real_x2));
-	
-		getchar();
-	}
-
-	if(Real_x1 / Real_x2 != Simu_Quotient && !(Simu_Quotient != Simu_Quotient) && !(Real_x1 / Real_x2 != Real_x1 / Real_x2)){
-		printf("Oops in Division function\n");
-		printf("%.320lf\n\n", Simu_Quotient);
-		printf("%.320lf\n\n", Real_x1 / Real_x2);
-		Show_Double (Simu_x1);
-		Show_Double (Simu_x2);
-		Show_Double (Quotient);
-		Show_Double (Function_Transform_Double_to_Bytes (Real_x1 / Real_x2));
-		getchar();	
-	}
-
-	if(Test_Case % 1000 == 0) printf("%d cases checked\n", Test_Case);
-*/
-	return 0;
-	}
-	
-
 }
+
+// a = 0x78a9aa225201c8b5;
+// b = 0x5b805e795a3d03ae;
+// mult
+// c = 
