@@ -1626,8 +1626,8 @@ int main () {
 		}
 		if (c == '/'){
 			struct double_n tmp = divi (&da, &db);
-			printf ("%.5lf\n", a / b);
-			//printf ("%.5lf\n", trans (&tmp));
+			//printf ("%.5lf\n", a / b);
+			printf ("%.5lf\n", trans (&tmp));
 		}
 	}
 	//da.debug (), db.debug ();
