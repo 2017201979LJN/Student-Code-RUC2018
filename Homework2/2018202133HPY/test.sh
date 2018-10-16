@@ -1,8 +1,8 @@
 #! /bin/bash
 
-./gen $RANDOM 10000 > tmp/data.in
+./gen $RANDOM 100000 > tmp/data.in
 
-./double_t_test < tmp/data.in > tmp/sample.out
+time ./double_t_test < tmp/data.in > tmp/sample.out
 ./c_builtin_double < tmp/data.in > tmp/ans.out
 
 sed -i 's/-nan/nan/g' tmp/sample.out
