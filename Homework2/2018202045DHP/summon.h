@@ -23,6 +23,7 @@ void Double_Rand_Combining (double *Result1, double *Result2){
 	}
 }
 
+/*
 double Double_Rand () {
 	unsigned char Temp;
 	double Result;
@@ -32,4 +33,28 @@ double Double_Rand () {
 		start[i] = Temp;
 	}
 	return Result;
+}*/
+
+unsigned long long rand64() {
+    return (((unsigned long long)rand()) << 32) | ((unsigned long long)rand());
 }
+
+double Double_Rand () {
+    // The first method can generate more edge case while the second
+    // method can prevent one number is less/greater than too many times
+    // of another.
+    if (rand() & 1) {
+        union {
+            unsigned long long uint64_t_value;
+            double double_value;
+        } u;
+        u.uint64_t_value = rand64();
+        return u.double_value;
+    } else {
+        double a = rand64() * (1ull << 63) + rand64(),
+               b = rand64() * (1ull << 63) + rand64();
+        int sign = (rand() & 1) ? 1 : -1;
+        return a / b * sign;
+    }
+}
+
