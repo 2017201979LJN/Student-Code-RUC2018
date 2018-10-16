@@ -121,7 +121,7 @@ big_number minus_big_number(big_number a, big_number b)
 	return plus_big_number(a, b);
 }
 
-big_number multiply_big_number(big_number a,big_number b)
+big_number multiply_big_number(big_number a, big_number b)
 {
 	big_number ans;
 	memset(ans.bit, 0, sizeof(ans.bit));
@@ -134,6 +134,21 @@ big_number multiply_big_number(big_number a,big_number b)
 			if (j > t) ans.bit[j - t] += a.bit[i] * b.bit[j];
 		}
 	}
+	for (int i = 255; i > 0; i--)
+	{
+		if (ans.bit[i] >= 2)
+		{
+			if (i != 1) ans.bit[i - 1] += ans.bit[i] / 2;
+			ans.bit[i] &= 1;
+		}
+	}
+	return ans;
+}
+
+big_number multiply2_big_number(big_number a, int b) 
+{
+	big_number ans = a;
+	for (int i = 255; i > 0; i--) ans.bit[i] *= b;
 	for (int i = 255; i > 0; i--)
 	{
 		if (ans.bit[i] >= 2)
@@ -171,13 +186,14 @@ big_number divide_big_number(big_number a, big_number b)
 	memset(ans.bit, 0, sizeof(ans.bit));
 	int minus = a.bit[0] ^ b.bit[0], base = 1;
 	a.bit[0] = 0, b.bit[0] = 0;
-	a = shl(a, 255 - BITS_OF_FRAC - 2);//
+	a = shl(a, 255 - BITS_OF_FRAC - 2);
 	for (int i = BITS_OF_FRAC + 2; i <= 255; i++)
 	{
 		ans.bit[i] = 1;
-		if (bigger_big_number(multiply_big_number(ans, b), a)) ans.bit[i] = 0;
+		if (bigger_big_number(shl(b, 255 - i), a)) ans.bit[i] = 0;
+		if (ans.bit[i] == 1) a = minus_big_number(a, shl(b, 255 - i));
 	}
-	ans = shr(ans, 255 - 3 * BITS_OF_FRAC - 2);//97
+	ans = shr(ans, 255 - 3 * BITS_OF_FRAC - 2);
 	ans.bit[0] = minus;
 	return ans;
 }
@@ -194,6 +210,21 @@ big_number long_long_to_big_number(long long v)
 		v >>= 1;
 	}
 	return ans;
+}
+
+double double_n_to_double(double_n v)
+{
+	unsigned long long ans = 0;
+	for (int i = 0; i <= 7; i++)
+	{
+		ans = (ans << 8) + v.bytes[i];
+	}
+	return *(double *)&ans;
+}
+
+unsigned long long print_double(double v)
+{
+	return *(unsigned long long *)&v;
 }
 
 double_n make_double_n(int minus, int exp, long long frac)
@@ -306,7 +337,7 @@ void print(double_n v)
 		ans /= 2;
 		E++;
 	}
-	printf("%.50f", ans * ((v.bytes[0] >> 7) == 0 ? 1.0 : -1.0));
+	printf("%f", ans * ((v.bytes[0] >> 7) == 0 ? 1.0 : -1.0));
 }
 
 double_n plus(double_n a,double_n b)
@@ -338,9 +369,11 @@ double_n plus(double_n a,double_n b)
 		if (b.bytes[0] >> 7 == 1) frac_b.bit[0] = 1;
 		if (exp_a < exp_b)
 		{
+			swap_double_n(&a, &b);
 			swap_int(&exp_a, &exp_b);
 			swap_big_number(&frac_a, &frac_b);
 		}
+		if (exp_a - exp_b > BITS_OF_FRAC + 1) return a;
 		frac_a = shl(frac_a, exp_a - exp_b);
 		exp_b = exp_a;
 		int base = 1;
@@ -655,8 +688,10 @@ int main()
 			ans = a / b;
 			ANS = divide(A, B);
 		}
+		//printf("%f\n", ans);
 		print(ANS);
 		printf("\n");
+		
 	}
 	return 0;
 }
