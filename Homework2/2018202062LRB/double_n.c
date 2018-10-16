@@ -342,20 +342,20 @@ void print(double_n v)
 
 double_n plus(double_n a,double_n b)
 {
-	double_n ans;
 	int type_a = get_type(a), type_b = get_type(b);
 	if (type_a > type_b)
 	{
 		swap_double_n(&a, &b);
 		swap_int(&type_a, &type_b);
 	}
-	if (type_b == 3) ans = b;
+	if (type_b == 3) return b;
 	else if (type_a == 2)
 	{
-		ans = a;
+		double_n ans = a;
 		if ((a.bytes[0] >> 7) ^ (b.bytes[0] >> 7) == 1) ans.bytes[7]++;
+		return ans;
 	}
-	else if (type_a < 2 && type_b == 2) ans = b;
+	else if (type_a < 2 && type_b == 2) return b;
 	else
 	{
 		int exp_a = exp_of_double_n(a), exp_b = exp_of_double_n(b);
@@ -408,12 +408,11 @@ double_n plus(double_n a,double_n b)
 			frac_ans <<= 1;
 			exp_ans--;
 		}
-		if(exp_ans >= 1 << BITS_OF_EXP - 1)
-			ans = make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
+		if(exp_ans >= 1 << BITS_OF_EXP)
+			return make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
 		if (exp_ans == 0) frac_ans >>= 1;
-		ans = make_double_n(minus, exp_ans, frac_ans);
+		return make_double_n(minus, exp_ans, frac_ans);
 	}
-	return ans;
 }
 
 double_n minus(double_n a,double_n b)
@@ -425,22 +424,22 @@ double_n minus(double_n a,double_n b)
 
 double_n multiply(double_n a,double_n b)
 {
-	double_n ans;
 	int type_a = get_type(a), type_b = get_type(b);
 	if (type_a > type_b)
 	{
 		swap_double_n(&a, &b);
 		swap_int(&type_a, &type_b);
 	}
-	if (type_b == 3) ans = b;
+	if (type_b == 3) return b;
 	else if (type_a == 2)
 	{
-		ans = a;
+		double_n ans = a;
 		if (ans.bytes[0] >> 7 & 1) ans.bytes[0] -= 1 << 7;
 		if ((a.bytes[0] >> 7) ^ (b.bytes[0] >> 7) == 1)
 			ans.bytes[0] = ans.bytes[0] + (1 << 7) * ((a.bytes[0] >> 7) ^ (b.bytes[0] >> 7));
+		return ans;
 	}
-	else if (type_a < 2 && type_b == 2) ans = b;
+	else if (type_a < 2 && type_b == 2) return b;
 	else
 	{
 		int exp_a = exp_of_double_n(a), exp_b = exp_of_double_n(b);
@@ -479,7 +478,7 @@ double_n multiply(double_n a,double_n b)
 		if (dexp > 0) frac_Ans = shr(frac_Ans, dexp);
 		else frac_Ans = shl(frac_Ans, -dexp);
 		if(exp_ans >= 1 << BITS_OF_EXP)
-			ans = make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
+			return make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
 		if (exp_ans == 0)
 		{
 			if (frac_Ans.bit[255 - BITS_OF_FRAC - 1] == 1)
@@ -517,36 +516,37 @@ double_n multiply(double_n a,double_n b)
 		}
 		frac_ans >>= 1;
 		exp_ans++;
-		ans = make_double_n(minus, exp_ans, frac_ans);
+		return make_double_n(minus, exp_ans, frac_ans);
 	}
-	return ans;
 }
 
 double_n divide(double_n a,double_n b)
 {
-	double_n ans;
 	int type_a = get_type(a), type_b = get_type(b);
 	if (type_a == 3) return a;
 	else if (type_b == 3) return b;
 	else if (type_a == 2)
 	{
+		double_n ans = a;
 		if (type_b == 2)
 		{
-			ans = a;
 			if (ans.bytes[0] >> 7 & 1) ans.bytes[0] -= 1 << 7;
 			if ((a.bytes[0] >> 7) ^ (b.bytes[0] >> 7) == 1)
 				ans.bytes[0] = ans.bytes[0] + (1 << 7) * ((a.bytes[0] >> 7) ^ (b.bytes[0] >> 7));
+			return ans;
 		}
 		else if (exp_of_double_n(b) == 0 && frac_of_double_n(b) == 0)
 		{
-			ans = a;
 			ans.bytes[7]++;
+			return ans;
 		}
 	}
 	else if (type_a < 2 && type_b == 2)
 	{
+		double_n ans;
 		memset(ans.bytes, 0, sizeof(ans.bytes));
 		ans.bytes[0] += (1 << 7) * ((a.bytes[0] >> 7) & 1);
+		return ans;
 	}
 	else
 	{
@@ -595,7 +595,7 @@ double_n divide(double_n a,double_n b)
 		if (dexp > 0) frac_Ans = shr(frac_Ans, dexp);
 		else frac_Ans = shl(frac_Ans, -dexp);
 		if(exp_ans >= 1 << BITS_OF_EXP)
-			ans = make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
+			return make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
 		if (exp_ans == 0)
 		{
 			if (frac_Ans.bit[255 - BITS_OF_FRAC - 1] == 1)
@@ -633,9 +633,8 @@ double_n divide(double_n a,double_n b)
 		}
 		frac_ans >>= 1;
 		exp_ans++;
-		ans = make_double_n(minus, exp_ans, frac_ans);
+		return make_double_n(minus, exp_ans, frac_ans);
 	}
-	return ans;
 }
 
 /*void show_bytes_binary_n(double_n v)
@@ -688,7 +687,6 @@ int main()
 			ans = a / b;
 			ANS = divide(A, B);
 		}
-		//printf("%f\n", ans);
 		print(ANS);
 		printf("\n");
 		
