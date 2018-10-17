@@ -129,6 +129,12 @@ struct double_n change_frac(struct double_n a,long long frac_of_a)
 long long more,more1;
 struct double_n right_shift(struct double_n a, int k)
 {
+	if (k == 0)
+	{
+		more1 = 0;
+		more = -1;
+		return a;
+	}
 	struct double_n b;
 	int sign_of_b = get_sign(a);
 	int exp_of_b = get_exp(a) + k;
@@ -410,7 +416,8 @@ struct double_n different_sign(struct double_n a, struct double_n b)
 		{
 			long long frac_of_c = frac_of_a - frac_of_b + bin[NUM_OF_FRAC];
 			int exp_of_c = exp_of_a;
-			while (frac_of_c < bin[NUM_OF_FRAC])
+			if (exp_of_c == 1) exp_of_c --;
+			while (frac_of_c < bin[NUM_OF_FRAC] && exp_of_c >= 1)
 			{
 				frac_of_c *= 2;
 				exp_of_c --;
@@ -514,14 +521,57 @@ struct double_n multiply(struct double_n a, struct double_n b)
 		long long frac_of_a = get_frac(a), frac_of_b = get_frac(b);
 		int exp_of_c = exp_of_a + exp_of_b - Bias;
 		int sign_of_c = get_sign(a) * get_sign(b);
-		if (exp_of_c < 0)
+		long long frac_of_c = get_frac_of_c(frac_of_a + bin[NUM_OF_FRAC], frac_of_b + bin[NUM_OF_FRAC]);
+		if (exp_of_c >= bin[NUM_OF_EXP] - 1) 
 		{
+			exp_of_c = bin[NUM_OF_EXP] - 1, frac_of_c = 0;
 			c = change_sign(c, sign_of_c);
-			c = change_exp(c, 0);
-			c = change_frac(c, 0);
+			c = change_exp(c, exp_of_c);
+			c = change_frac(c, frac_of_c);
 			return c;
 		}
-		long long frac_of_c = get_frac_of_c(frac_of_a + bin[NUM_OF_FRAC], frac_of_b + bin[NUM_OF_FRAC]);
+		if (exp_of_c < 0)
+		{
+			if (exp_of_c < -2 * NUM_OF_FRAC)
+			{
+				c = change_sign(c, sign_of_c);
+				c = change_exp(c, 0);
+				c = change_frac(c, 0);
+			}
+			else
+			{
+				int fl = 0;
+				if (more > 0) fl = 1;
+				while ( exp_of_c <= -1 )
+				{
+					exp_of_c ++;
+					if (frac_of_c % 2 == 1)
+					{
+						fl = 1;
+					}
+					frac_of_c /= 2;
+				}
+				if (frac_of_c % 2 == 1)
+				{
+					frac_of_c /= 2;
+					if (fl)
+					frac_of_c ++;
+					else
+					{
+						if (frac_of_c % 2 == 1) frac_of_c ++;
+					}
+				}
+				else
+				{
+					frac_of_c /= 2;
+				}
+				//exp_of_c ++;
+				c = change_sign(c, sign_of_c);
+				c = change_exp(c, exp_of_c);
+				c = change_frac(c, frac_of_c);
+			}
+			return c;
+		}
 		if (frac_of_c >= bin[NUM_OF_FRAC + 1]) 
 		{
 			more += bin[NUM_OF_FRAC] * (frac_of_c % 2 == 1);
@@ -530,15 +580,29 @@ struct double_n multiply(struct double_n a, struct double_n b)
 			{
 				frac_of_c ++;
 			}
-			if (more == bin[NUM_OF_FRAC] && frac_of_c % 2 == 0)
+			if (more == bin[NUM_OF_FRAC] && frac_of_c % 2 == 1)
 			{
 				frac_of_c ++;
 			}
+			if (exp_of_c >= bin[NUM_OF_EXP] - 1)
+			{
+				exp_of_c = bin[NUM_OF_EXP] - 1;
+				frac_of_c = 0;
+			}
+			c = change_sign(c, sign_of_c);
+			c = change_exp(c, exp_of_c);
+			c = change_frac(c, frac_of_c);
+			return c;
 		}
 		if (more > bin[NUM_OF_FRAC - 1]) frac_of_c ++;
 		if (more == bin[NUM_OF_FRAC - 1] && frac_of_c % 2 == 1) frac_of_c ++;
 		if (exp_of_c >= bin[NUM_OF_EXP] - 1) exp_of_c = bin[NUM_OF_EXP] - 1, frac_of_c = 0;
 		else if(exp_of_c != 0) frac_of_c -= bin[NUM_OF_FRAC];
+		if (exp_of_c == 0 && frac_of_c >= bin[NUM_OF_FRAC])
+		{
+			exp_of_c = 1;
+			frac_of_c -= bin[NUM_OF_FRAC];
+		}
 		c = change_sign(c , sign_of_c);
 		c = change_exp(c , exp_of_c);
 		c = change_frac(c , frac_of_c);
@@ -944,23 +1008,24 @@ int main()
 	printf("%lf ", x[i]);
 	printf("\n");
 	print_table();*/
-	print_bits_of_double_n(change_double_to_double_n(two_pow[0] * 0.25));
+//	print_bits_of_double_n(change_double_to_double_n(two_pow[0] * 0.25));
 //	int exp = rand() % 255;
 //	for (int k = 0; k < 4; k++)
 	for (int i = 1; i <= NUM_OF_TEST; i++)
 	{
 	//	double f1 = rand() , f2 = rand();
 	//	double f1 =  rand() + rand() / rand(), f2 = rand() + rand() / rand() ;
-		char op = y[1];
+		char op = y[2];
 		struct double_n a , b;
 		a = change_sign(a, 1);
 		a = change_exp(a, rand() % (bin[NUM_OF_EXP] - 100) );
-		a = change_frac(a, (long long)rand() );
+		a = change_frac(a, (long long)rand() * rand() );
 		if ( get_exp(a) == bin[NUM_OF_EXP] - 1) a = change_frac(a, 0);
 		b = change_sign(b, 1);
-		int exp_of_b = get_exp(a) + rand() % 30;
+		int exp_of_b = get_exp(a) + rand() % 30 - 30;
+		if (exp_of_b < 0) exp_of_b = 0;
 		b = change_exp(b, exp_of_b);
-		b = change_frac(b, (long long)rand() );
+		b = change_frac(b, (long long)rand() * rand() );
 	//	struct double_n a = change_double_to_double_n(f1) , b = change_double_to_double_n(f2);
 //		print_bits_of_double_n(a);
 		double f1 = print_out_double_n(a), f2 = print_out_double_n(b);
@@ -974,6 +1039,8 @@ int main()
 			wa[op]++;
 			long long frac_of_a = get_frac(a), frac_of_b = get_frac(b);
 			printf("%d\n", abs( get_exp(a) - get_exp(b) ) );
+			printf("%.10le %.10le\n", f1, f2);
+			printf("%.10le\n%.10le\n",my_answer[i], std_answer[i]);
 			print_bits_of_double_n(a);
 //			for (int j = NUM_OF_FRAC - 1; j >= 0; j--)
 //			if (frac_of_a & bin[j]) printf("%d ",NUM_OF_FRAC - j);
@@ -988,14 +1055,14 @@ int main()
 			print_bits_of_double_n(c);
 			print_bits_of_double_n(change_double_to_double_n(std_answer[i]));
 			printf("\n");
-			/*printf("%lld\n",more);
+			//printf("%lld\n",more);
 			printf("%13d",bit[2][0]);
 			for (int j = 1; j <= NUM_OF_FRAC * 2; j++)
 			{
 				printf("%d",bit[2][j]);
 				if ( (j + 4) % 8 == 0) printf(" ");
 			}
-			printf("\n");*/
+			printf("\n");
 			break;
 		}
 		tot[op]++;	
