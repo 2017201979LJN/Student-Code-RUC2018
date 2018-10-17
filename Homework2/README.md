@@ -16,7 +16,7 @@
 
 核心数据结构
 #define NUM_OF_BYTES 8
+
 struct double_n {
           unsigned char bytes[NUM_OF_BYTES];
 }
-
