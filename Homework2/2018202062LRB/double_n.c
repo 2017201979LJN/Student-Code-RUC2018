@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -203,7 +202,7 @@ big_number long_long_to_big_number(long long v)
 	big_number ans;
 	memset(ans.bit, 0, sizeof(ans.bit));
 	ans.bit[0] = v < 0;
-	v = fabs(v);
+	if (v < 0) v = -v;
 	for (int i = 255; i > 0; i--)
 	{
 		ans.bit[i] = v & 1;
@@ -249,7 +248,7 @@ double_n double_to_double_n(double v)
 {
 	if (v == 0) return make_double_n(0, 0, 0LL);
 	int minus = v < 0;
-	v = fabs(v);
+	if (v < 0) v = -v;
 	int E = 0;
 	if (v > 1)
 	{
@@ -263,7 +262,11 @@ double_n double_to_double_n(double v)
 	}
 	if (v >= 2) return make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
 	long long frac = 0;
-	v -= 1;
+	if (v >= 1)
+	{
+		frac = 1;
+		v -= 1;
+	}
 	for (int i = 1; i <= BITS_OF_FRAC; i++)
 	{
 		v *= 2;
@@ -271,7 +274,7 @@ double_n double_to_double_n(double v)
 		if (v >= 1) v -= 1;
 	}
 	int exp = E + bias;
-	if (exp == 0) frac = (frac >> 1) + (1LL << BITS_OF_FRAC - 1);
+	if (exp == 1) frac -= 1LL << BITS_OF_FRAC;
 	return make_double_n(minus, exp, frac);
 }
 
@@ -337,7 +340,7 @@ void print(double_n v)
 		ans /= 2;
 		E++;
 	}
-	printf("%f", ans * ((v.bytes[0] >> 7) == 0 ? 1.0 : -1.0));
+	printf("%.400f", ans * ((v.bytes[0] >> 7) == 0 ? 1.0 : -1.0));
 }
 
 double_n plus(double_n a,double_n b)
@@ -560,6 +563,8 @@ double_n divide(double_n a,double_n b)
 				return make_double_n(minus, (1 << BITS_OF_EXP) - 1, 0LL);
 		}
 		else if (exp_a == 0 && frac_of_double_n(a) == 0) return a;
+		long long frac_A = frac_of_double_n(a),
+				  frac_B = frac_of_double_n(b);
 		big_number frac_a = long_long_to_big_number(frac_of_double_n(a)),
 				   frac_b = long_long_to_big_number(frac_of_double_n(b));
 		if (type_a == 0) frac_a.bit[255 - BITS_OF_FRAC]++;
@@ -687,6 +692,7 @@ int main()
 			ans = a / b;
 			ANS = divide(A, B);
 		}
+		//printf("%.400f\n", ans);
 		print(ANS);
 		printf("\n");
 		
