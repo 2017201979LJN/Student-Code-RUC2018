@@ -57,16 +57,28 @@ int get_sign (struct double_n v)
 
 unsigned int get_exp (struct double_n v)
 {
-    return ( ( ((unsigned int) v.bytes[7])  << 4)  + (v.bytes[6] >> 4) ) % (1 << 11);
+    unsigned int res = 0;
+    for (int i = 1; i <= NUM_OF_EXP; i ++){   
+        int shift_index = i + NUM_OF_SIGN - 1;
+        int bit_index = 7 - shift_index % NUM_OF_BITS, byte_index = NUM_OF_BYTES - shift_index / NUM_OF_BITS - 1;
+        if (v.bytes[byte_index] & (1 << bit_index) ){
+            res += (1 << (NUM_OF_EXP - i) );
+        }
+    }
+    return res;
 }
 
 unsigned long long get_frac (struct double_n v)
 {
     unsigned long long res = 0;
-    for (int i = 7; i >= 0; i --){
-        res += ( ( (unsigned long long) v.bytes[i]) << (8 * i) );
+    for (int i = 1; i <= NUM_OF_FRAC; i ++){   
+        int shift_index = i + NUM_OF_SIGN + NUM_OF_EXP - 1;
+        int bit_index = 7 - shift_index % NUM_OF_BITS, byte_index = NUM_OF_BYTES - shift_index / NUM_OF_BITS - 1;
+        if (v.bytes[byte_index] & (1 << bit_index) ){
+            res += (1LL << (NUM_OF_FRAC - i) );
+        }
     }
-    return res % (1ll << 52);
+    return res;
 }
 
 int is_inf (struct double_n v)
@@ -662,6 +674,6 @@ void calculator(int len)
 
 int main()
 {
-    calculator(309);
+    calculator(10);//change output double's len
     return 0;
 }

@@ -68,7 +68,7 @@ unsigned long long get_frac (struct double_n v)
         int shift_index = i + NUM_OF_SIGN + NUM_OF_EXP - 1;
         int bit_index = 7 - shift_index % NUM_OF_BITS, byte_index = NUM_OF_BYTES - shift_index / NUM_OF_BITS - 1;
         if (v.bytes[byte_index] & (1 << bit_index) ){
-            res += (1 << (NUM_OF_FRAC - i) );
+            res += (1LL << (NUM_OF_FRAC - i) );
         }
     }
     return res;
