@@ -52,7 +52,7 @@ void init_double (struct double_n *v)
 
 int get_sign (struct double_n v)
 {
-    return v.bytes[NUM_OF_BYTES - 1] >> NUM_OF_BITS ? -1 : 1;
+    return v.bytes[NUM_OF_BYTES - 1] >> (NUM_OF_BITS - 1) ? -1 : 1;
 }
 
 unsigned int get_exp (struct double_n v)
@@ -508,7 +508,6 @@ void get_post_expression (int *post_expression, struct double_n *double_list)
                 }
                 break;
             default:
-                printf("invalid\n");
                 break;
         }
     }
@@ -545,7 +544,7 @@ struct double_n calc_post_expression (int *post_expression, struct double_n *dou
         if (top_ch >= MAX_OPER_LEN) {
             top_ch -= MAX_OPER_LEN;
             int top_num = oper_stack[--oper_s_tot], second_num = oper_stack[--oper_s_tot];
-            double_list[top_num] = calc (double_list[second_num], double_list[top_num], top_ch);
+            double_list[top_num] = calc (double_list[second_num], double_list[top_num], top_ch);   
             oper_stack[oper_s_tot++] = top_num;
         }
         else
@@ -599,7 +598,7 @@ void print_accur (struct high_accur v, int len)
     struct high_accur round_in;
     init_accur (&round_in);
     round_in.bits[HIGH_ACCUR_SIZE / 2 - len] = 1;
-    if (v.bits[HIGH_ACCUR_SIZE / 2 - len - 1] > 5)
+    if (v.bits[HIGH_ACCUR_SIZE / 2 - len - 1] >= 5)
         v = h_add (v, round_in);
     int is_zero = 1;
     for (int i = HIGH_ACCUR_SIZE - 1; i >= HIGH_ACCUR_SIZE / 2; i--) {
@@ -633,6 +632,8 @@ void print_double (struct double_n v, int len) {
         printf ("nan\n");
         return;
     }
+    if (get_sign (v) == -1)
+        putchar ('-');
     int exp = get_exp (v) - ( (1LL << (NUM_OF_EXP - 1) ) - 1);
     if (is_denor (v) )
         exp++;

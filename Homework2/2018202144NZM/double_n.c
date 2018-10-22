@@ -45,7 +45,7 @@ void init_double (struct double_n *v)
 
 int get_sign (struct double_n v)
 {
-    return v.bytes[NUM_OF_BYTES - 1] >> NUM_OF_BITS ? -1 : 1;
+    return v.bytes[NUM_OF_BYTES - 1] >> （NUM_OF_BITS - 1） ? -1 : 1;
 }
 
 unsigned int get_exp (struct double_n v)
