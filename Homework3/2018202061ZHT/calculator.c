@@ -5,6 +5,7 @@
 typedef unsigned char uc;
 #define ull unsigned long long
 #define N 1005
+#define Limit_of_Double 400
 #define Num_of_Bytes 8
 #define Value_of_Bytes 256
 #define Half_of_Value 128
@@ -20,7 +21,10 @@ typedef unsigned char uc;
 #define Two 2.0
 #define Half 0.5
 #define Board_of_Decimal 10
-#define Need_of_Bit 5
+#define Half_of_Board 5
+#define Min_of_Digit '0'
+#define Max_of_Digit '9'
+#define Need_of_Bit -1
 int n;
 char s[N];
 struct double_n{
@@ -49,7 +53,7 @@ void setinf (struct double_n *a) {
 		a->bytes[i] = 0;
 }
 void setneg (struct double_n *a) {
-	a->bytes[0] ^= 128;
+	a->bytes[0] ^= Half_of_Value;
 }
 void Swap (struct double_n *a, struct double_n *b) {
 	for (int i = 0; i < Num_of_Bytes; i++) {
@@ -1141,7 +1145,7 @@ struct double_n get (int *x) {
 		(*x)++;
 	}
 	while (*x < n && ((ch = s[*x]) >= '0' && ch <= '9')){
-		tmp = chu (10);
+		tmp = chu (Board_of_Decimal);
 		tmp = mul (&v1, &tmp);
 		tmp2 = chu (ch - '0');
 		v1 = add (&tmp, &tmp2);
@@ -1151,49 +1155,57 @@ struct double_n get (int *x) {
 		(*x)++;
 		struct double_n v2 = chu (1);
 		while (*x < n && ((ch = s[*x]) >= '0' && ch <= '9')) {
-			tmp = chu (10);
+			tmp = chu (Board_of_Decimal);
 			tmp = mul (&v1, &tmp);
 			tmp2 = chu (ch - '0');
 			v1 = add (&tmp, &tmp2);
-			tmp = chu (10);
+			tmp = chu (Board_of_Decimal);
 			v2 = mul (&v2, &tmp);
 			(*x)++;
 		}
 		v1 = divi (&v1, &v2);
 	}
 	if ((ch = s[*x]) == 'e') {
+		//double tt = trans (&v1);
+		//printf("%.310lf\n", tt);
 		(*x)++;
 		int f1 = 0;
-		if ((ch = s[*x]) == '-') f1 = 1;
-		int ex = 1;
+		if ((ch = s[*x]) == '-'){
+			f1 = 1;
+			(*x)++;
+		}
+		int ex = 0;
 		while (*x < n && ((ch = s[*x]) >= '0' && ch <= '9')) {
-			ex = ex * 10 + ch - '0';
+			ex = ex * Board_of_Decimal + ch - '0';
 			(*x)++;
 		}
 		if (f1)
 			ex = -ex;
-		if (ex >= 4) {
+		//printf ("%d\n",ex);
+		if (ex >= Limit_of_Double) {
 			setinf (&v1);
 		}
-		else if (ex <= -4) {
+		else if (ex <= -Limit_of_Double) {
 			clear (&v1);
 		}
 		else {
 			if (ex > 0) {
 				for (int i = 1; i <= ex; i++) {
-					tmp = chu (10);
+					tmp = chu (Board_of_Decimal);
 					v1 = mul (&v1 ,&tmp);
 				}
 			}
 			else if (ex < 0) {
 				for (int i = 1; i <= -ex; i++) {
-					tmp = chu (10);
+					tmp = chu (Board_of_Decimal);
 					v1 = divi (&v1, &tmp);
 				}
 			}
 		}
 	}
 	if (f) setneg (&v1);
+		//double tt = trans (&v1);
+		//printf ("%.310lf\n", tt);
 	return v1;
 }
 int isopt (char c) {
@@ -1210,7 +1222,7 @@ char getopt (int *x) {
 struct bignum {
 	int sym, len1, len2;
 	int inte[Length_of_Bignum];
-	int deci[Length_of_Bignum];
+	int deci[N];
 }Big;
 void set_bignum_zero (struct bignum *a) {
 	a->len1 = 1;
@@ -1222,8 +1234,8 @@ void mul2 (struct bignum *a) {
 	for (int i = a->len2; i > 0; i--) {
 		a->deci[i] *= 2;
 		a->deci[i] += used;
-		if (a->deci[i] >= 10) {
-			a->deci[i] -= 10;
+		if (a->deci[i] >= Board_of_Decimal) {
+			a->deci[i] -= Board_of_Decimal;
 			used = 1;
 			if (a->deci[i] == 0 && i == a->len2)
 				a->len2--;
@@ -1234,8 +1246,8 @@ void mul2 (struct bignum *a) {
 	for (int i = 1; i <= a->len1; i++) {
 		a->inte[i] *= 2;
 		a->inte[i] += used;
-		if (a->inte[i] >= 10) {
-			a->inte[i] -= 10;
+		if (a->inte[i] >= Board_of_Decimal) {
+			a->inte[i] -= Board_of_Decimal;
 			used = 1;
 			if (i == a->len1) {
 				a->len1++;
@@ -1249,7 +1261,7 @@ void mul2 (struct bignum *a) {
 void divi2(struct bignum *a) {
 	int used = 0;
 	for (int i = a->len1; i > 0; i--) {
-		a->inte[i] += used * 10;
+		a->inte[i] += used * Board_of_Decimal;
 		used = a->inte[i] & 1;
 		a->inte[i] >>= 1;
 		if (a->inte[i] == 0 && i == a->len1 && a->len1 > 1)
@@ -1260,7 +1272,7 @@ void divi2(struct bignum *a) {
 		a->deci[1] = 0;
 	}
 	for (int i = 1; i <= a->len2; i++) {
-		a->deci[i] += used * 10;
+		a->deci[i] += used * Board_of_Decimal;
 		used = a->deci[i] & 1;
 		a->deci[i] >>= 1;
 		if (used && i == a->len2) {
@@ -1309,9 +1321,9 @@ void Print (struct bignum *a, int pos_of_bit) {
 			else {
 				int num = a->deci[pos_of_bit];
 				if (pos_of_bit + 1 <= a->len2) {
-					if (a->deci[pos_of_bit + 1] > 5)
+					if (a->deci[pos_of_bit + 1] > Half_of_Board)
 						num++;
-					else if (a->deci[pos_of_bit + 1] == 5) {
+					else if (a->deci[pos_of_bit + 1] == Half_of_Board) {
 						for (int i = pos_of_bit + 2; i <= a->len2; i++)
 							if (a->deci[i] > 0) {
 								num++;
@@ -1323,7 +1335,7 @@ void Print (struct bignum *a, int pos_of_bit) {
 			}
 		}
 	}
-	else {
+	else if (pos_of_bit != -1){
 		printf (".");
 		for (int i = 1; i <= pos_of_bit; i++)
 			printf ("0");
@@ -1340,38 +1352,34 @@ struct bignum bignum_trans (struct double_n *a) {
 		return *b;
 	}
 	if (is_inf (a)) {
-		if (a->bytes[0] >> 7)
+		if (a->bytes[0] >> (Num_of_Bytes - 1))
 			b->sym = -2;
 		else b->sym = 2;
 		return *b;
 	}
-	b->sym = a->bytes[0] >> 7;
+	b->sym = a->bytes[0] >> (Num_of_Bytes - 1);
 	if (iszero (a)) {
-		pow_of_two = 1 - Bias - 52;
+		pow_of_two = 1 - Bias - Length_of_Frac;
 	}
 	else {
-		pow_of_two = calexp (a) - Bias - 52;
+		pow_of_two = calexp (a) - Bias - Length_of_Frac;
 		b->len1 = 1;
 		b->inte[1] = 1;
 	}
-	//Print (b, 5);
-	//int cnt1 = 0, cnt2 = 0;
-	for (int i = 12; i < 64; i++) {
-		mul2 (b);//Print (b, 5);//cnt1++;
+	for (int i = Length_of_Exp; i < 64; i++) {
+		mul2 (b);
 		int by = i >> 3, p = Num_of_Bytes - (i & (Num_of_Bytes - 1)) - 1;
 		if ((a->bytes[by] >> p) & 1)
 			add1 (b);
 	}
-	//printf ("%d %d %d\n", pow_of_two, b->len1, b->inte[1]);
 	if (pow_of_two > 0) {
 		for (int i = 1; i <= pow_of_two; i++)
 			mul2 (b);
 	}
 	if (pow_of_two < 0) {
 		for (int i = 1; i <= -pow_of_two; i++)
-			divi2 (b);//,Print (b, 5); 
+			divi2 (b);
 	}
-	//printf ("%d %d\n",cnt1, cnt2);
 	return *b;
 }
 struct stack{
@@ -1386,14 +1394,12 @@ struct double_n solve () {
 			pos++;
 		}
 		else if (s[pos] == '(') {
-			//printf ("5 %d\n", pos);
 			top++;
-			st[top].ty = 5;
+			st[top].ty = Half_of_Board;
 			pre = top;
 			pos++;
 		}
 		else if (s[pos] == ')') {
-			//printf ("6 %d\n", pos);
 			struct double_n tmp;
 			if (top - pre == 1) {
 				tmp = st[top].a;
@@ -1406,7 +1412,7 @@ struct double_n solve () {
 					tmp = sub (&st[pre + 1].a, &st[pre + 3].a);
 				top = pre - 1;
 			}
-			if (st[top].ty <= 2 || st[top].ty == 5) {
+			if (st[top].ty <= 2 || st[top].ty == Half_of_Board) {
 				top++;
 				st[top].ty = 0;
 				st[top].a = tmp;
@@ -1423,7 +1429,6 @@ struct double_n solve () {
 			pos++;
 		}
 		else if (s[pos] == '+') {
-			//printf ("1 %d\n", pos);
 			if (top - pre > 1) {
 				struct double_n tmp;
 				if (st[pre + 2].ty == 1)
@@ -1439,7 +1444,6 @@ struct double_n solve () {
 			pos++;
 		}
 		else if (s[pos] == '-') {
-			//printf ("2 %d\n", pos);
 			if (top - pre > 1) {
 				struct double_n tmp;
 				if (st[pre + 2].ty == 1)
@@ -1455,23 +1459,18 @@ struct double_n solve () {
 			pos++;
 		}
 		else if (s[pos] == '*') {
-			//printf ("3 %d\n", pos);
 			top++;
 			st[top].ty = 3;
 			pos++;
 		}
 		else if (s[pos] == '/') {
-			//printf ("4 %d\n", pos);
 			top++;
 			st[top].ty = 4;
 			pos++;
 		}
 		else {
-			//printf ("0 %d\n", pos);
 			struct double_n tmp = get (&pos);
-			//double tt = trans (&tmp);
-			//printf("%lf\n", tt);
-			if (st[top].ty <= 2 || st[top].ty == 5) {
+			if (st[top].ty <= 2 || st[top].ty == Half_of_Board) {
 				top++;
 				st[top].ty = 0;
 				st[top].a = tmp;
@@ -1486,9 +1485,6 @@ struct double_n solve () {
 				st[top].a = tmp;
 			}
 		}
-		//printf ("top= %d %d\n", top, st[top].ty);
-		//double tt = trans (&st[top].a);
-		//printf ("%lf\n", tt);
 	}
 	if (top > 1) {
 		struct double_n tmp;
@@ -1554,7 +1550,7 @@ int main () {
 		}*/
 	}
 }
-//5.1 + 2.3
+//Half_of_Board.1 + 2.3
 /*double benchmark_calc(double a, double b, char opt) {
 	da = chu (a), db = chu (b);
 	if (opt == '+'){
