@@ -944,74 +944,8 @@ struct double_n change_double_to_double_n(double a)
 	b = change_frac(b, frac_of_b);
 	return b;
 }
-int bit_of_a[NUM_OF_BYTES * 8];
-struct double_n rounding(struct double_n a, int k)
-{
-	struct double_n b = a;
-	long long frac_of_b = get_frac(a);
-	int exp_of_b = get_exp(a);
-	long long value = frac_of_b & (bin[NUM_OF_FRAC - k] - 1);
-	if (value != bin[NUM_OF_FRAC - k - 1])
-	{
-		if (value < bin[NUM_OF_FRAC - k - 1])
-		{
-			frac_of_b &= bin[NUM_OF_BIN - 1] - bin[NUM_OF_FRAC - k];
-		}
-		else
-		{
-			frac_of_b &= bin[NUM_OF_BIN - 1] - bin[NUM_OF_FRAC - k];
-			frac_of_b += bin[NUM_OF_FRAC - k];
-		}
-	}
-	else
-	{
-		if (frac_of_b & bin[NUM_OF_FRAC - k])
-		{
-			frac_of_b &= bin[NUM_OF_BIN - 1] - bin[NUM_OF_FRAC - k];
-			frac_of_b += bin[NUM_OF_FRAC - k];
-		}
-		else
-		{
-			frac_of_b &= bin[NUM_OF_BIN - 1] - bin[NUM_OF_FRAC - k];
-		}
-	}
-	while (frac_of_b >= bin[NUM_OF_FRAC])
-	{
-		frac_of_b /= 2;
-		exp_of_b ++;
-	}
-	b = change_exp(b, exp_of_b);
-	b = change_frac(b, frac_of_b);
-	return b;
-}
-void out(double a)
-{
-	printf("%lf\n", a);
-}
-double x[10];
-char y[4] = {'+','-','*','/'};
-double run(double a, char op, double b)
-{
-	if (op == '+') return a + b;
-	if (op == '-') return a - b;
-	if (op == '*') return a * b;
-	if (op == '/') return a / b;
-}
-void print_table()
-{
-	for (int i = 0; i <= 7; i++)
-	for (int j = 0; j <= 7; j++)
-	{
-		for (int k = 0; k < 4; k++)
-		printf("%lf %c %lf == %lf\n", x[i], y[k], x[j], run(x[i],y[k],x[j]));
-	}
-}
-#define NUM_OF_TEST 10000
-double my_answer[NUM_OF_TEST],std_answer[NUM_OF_TEST];
-int wa[10000],tot[10010];
 int main()
 {
-	srand( time(0) );
 	bin[0] = 1LL;
 	for (int i = 1; i < NUM_OF_BIN; i++)
 	{
@@ -1023,86 +957,19 @@ int main()
 	two_pow[i] = two_pow[i - 1] * 2.0;
 	for (int i = Bias - 1 ; i >= 0; i--)
 	two_pow[i] = two_pow[i + 1] / 2.0;
-	/*double inf = 1.0 / 0.0, nan = inf / inf;
-	x[0] = inf; x[1] = -1 * inf; x[2] = -1 * nan; x[3] = nan; x[4] = 0.0; x[5] = -0.0; x[6] = 1.0; x[7] = -1.0;
-	for(int i = 0; i <= 7; i++)
-	printf("%lf ", x[i]);
-	printf("\n");
-	print_table();*/
-//	print_bits_of_double_n(change_double_to_double_n(two_pow[0] * 0.25));
-//	int exp = rand() % 255;
-	for (int k = 0; k < 4; k++)
-	for (int i = 1; i <= NUM_OF_TEST; i++)
+	freopen("double.in","r",stdin);
+	freopen("my_answer.txt","w",stdout);
+	double f1,f2;
+	char op;
+	while(scanf("%lf%c%lf",&f1,&op,&f2) != EOF)
 	{
-	//	double f1 = rand() , f2 = rand();
-	//	double f1 =  rand() + rand() / rand(), f2 = rand() + rand() / rand() ;
-		char op = y[k];
-		struct double_n a , b;
-		a = change_sign(a, 1);
-		a = change_exp(a, rand() % (bin[NUM_OF_EXP] - 100) );
-		a = change_frac(a, (long long)rand() * rand() );
-		if ( get_exp(a) == bin[NUM_OF_EXP] - 1) a = change_frac(a, 0);
-		b = change_sign(b, 1);
-		int exp_of_b = get_exp(a) + rand() % 30 - 30;
-		if (exp_of_b < 0) exp_of_b = 0;
-		b = change_exp(b, exp_of_b);
-		b = change_frac(b, (long long)rand() * rand() );
-	//	struct double_n a = change_double_to_double_n(f1) , b = change_double_to_double_n(f2);
-//		print_bits_of_double_n(a);
-		double f1 = print_out_double_n(a), f2 = print_out_double_n(b);
-//		print_bits_of_double_n(b);
-//		printf("%.10le %.10le\n",x,y);
+		struct double_n a = change_double_to_double_n(f1) , b = change_double_to_double_n(f2);
 		struct double_n c = calculate(a , op , b);
-		my_answer[i] = print_out_double_n(c); 
-		std_answer[i] = run(f1, op, f2);
-	/*	if(my_answer[i] != std_answer[i])
-		{
-			wa[op]++;
-			long long frac_of_a = get_frac(a), frac_of_b = get_frac(b);
-			printf("%d\n", abs( get_exp(a) - get_exp(b) ) );
-			//printf("%lld %lld\n",more, more1);
-			printf("%.10le %.10le\n", f1, f2);
-			printf("%.10le\n%.10le\n",my_answer[i], std_answer[i]);
-			print_bits_of_double_n(a);
-//			for (int j = NUM_OF_FRAC - 1; j >= 0; j--)
-//			if (frac_of_a & bin[j]) printf("%d ",NUM_OF_FRAC - j);
-//			printf("\n");
-			print_bits_of_double_n(b);
-			int exp_of_a = get_exp(a), exp_of_b = get_exp(b);
-			printf("%d\n",exp_of_a - exp_of_b);
-			print_bits_of_double_n( right_shift(b, exp_of_a - exp_of_b ) );
-//			for (int j = NUM_OF_FRAC - 1; j >= 0; j--)
-//			if (frac_of_b & bin[j]) printf("%d ",NUM_OF_FRAC - j);
-			printf("\n");
-			print_bits_of_double_n(c);
-			print_bits_of_double_n(change_double_to_double_n(std_answer[i]));
-			printf("\n");
-			//printf("%lld\n",more);
-			printf("%13d",bit[2][0]);
-			for (int j = 1; j <= NUM_OF_FRAC * 2; j++)
-			{
-				printf("%d",bit[2][j]);
-				if ( (j + 4) % 8 == 0) printf(" ");
-			}
-			printf("\n");
-			break;
-		}
-		tot[op]++;	*/
+		double my_answer = print_out_double_n(c); 
+		printf("%.30le\n",my_answer);
 	}
-//	printf("%4d %4d %4d %4d\n",wa['+'],wa['-'],wa['*'],wa['/']);
-//	printf("%4d %4d %4d %4d\n",tot['+'],tot['-'],tot['*'],tot['/']);
-	FILE *fp;
-	fp = fopen("my_answer.txt","w+");
-	for (int i = 1; i <= NUM_OF_TEST; i++)
-	{
-		fprintf(fp,"%.32le\n",my_answer[i]);
-	}
-	fclose(fp);
-	fp = fopen("std_answer.txt","w+");
-	for (int i = 1; i <= NUM_OF_TEST; i++)
-	{
-		fprintf(fp,"%.32le\n",std_answer[i]);
-	}
-	fclose(fp);
+	fclose(stdin);
+	fclose(stdout);
+	
 	return 0;
 }
