@@ -610,7 +610,7 @@ void print_accur (struct high_accur v, int len)
     if (is_zero)
         putchar (CH_ZERO);
     int last_digit = HIGH_ACCUR_SIZE;
-    for (int i = HIGH_ACCUR_SIZE / 2 - 1; i >= HIGH_ACCUR_SIZE / 2 - len; i--) {
+    for (int i = HIGH_ACCUR_SIZE / 2 - 1; i >= HIGH_ACCUR_SIZE / 2 - len && i >= 0; i--) {
         if (v.bits[i])
             last_digit = i;
     }
@@ -675,6 +675,6 @@ void calculator(int len)
 
 int main()
 {
-    calculator(10);//change output double's len
+    calculator(30);//change output double's len
     return 0;
 }
