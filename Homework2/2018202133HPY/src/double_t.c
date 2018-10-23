@@ -310,14 +310,15 @@ DOUBLED __doubleDMul(DOUBLED l,
         return ret;
     }
 
-    if ((__doubleDIsZero(l) || __doubleDIsZero(r)) && (__doubleDIsInf(l) || __doubleDIsInf(r))) {
-        __doubleDSetNan(&ret);
-        return ret;
-    }
-
     if (__doubleDIsInf(l) || __doubleDIsInf(r)) {
-        __doubleDSetInf(&ret);
-        return ret;
+        if (__doubleDIsZero(l) || __doubleDIsZero(r)) {
+            __doubleDSetNan(&ret);
+            return ret;
+        }
+        else {
+            __doubleDSetInf(&ret);
+            return ret;
+        }
     }
 
     signed expo = __doubleDGetExpo(l) + __doubleDGetExpo(r);
@@ -357,8 +358,13 @@ DOUBLED __doubleDDiv(DOUBLED l,
         }
     }
 
-    if (__doubleDIsInf(l) || __doubleDIsInf(r)) {
+    if (__doubleDIsInf(l)) {
         __doubleDSetInf(&ret);
+        return ret;
+    }
+
+    if (__doubleDIsInf(r)) {
+        ret.expo = ret.val = 0;
         return ret;
     }
 

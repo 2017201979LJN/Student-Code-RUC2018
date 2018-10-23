@@ -89,6 +89,7 @@ void swap_128(struct int_128*, struct int_128 *b);
 long long Max(long long, long long);
 long long Min(long long, long long);
 long long generate_rand(long long, long long);
+struct double_n generate_rand_double_n();
 
 //main oerator
 struct double_n shit(int, int, struct int_128);
@@ -109,6 +110,7 @@ void generate_input();
 void begin_test();
 void c_double();
 void my_double_n();
+void extra_test();
 
 int main() {
 	srand(time(0));
@@ -118,10 +120,17 @@ int main() {
 //	rand_test();
 	generate_input();
 	begin_test();
+	extra_test();
 	return 0;
 }
 
 //int128
+void prt_bit(struct double_n *a, struct ex_bytes *b) {
+	for (int i = 1; i <= 128; i++) {
+		printf("%d", get_kth_digit_double_n(a, b, i));
+	}
+	printf("\n");
+}
 void prt_bit_128(struct int_128 a) {
 	int aa[130];
 	for (int i = 1; i <= 64; i++) {
@@ -241,7 +250,7 @@ void right_shift_double_n(struct double_n *a, struct ex_bytes *b, int l, int r, 
 		if (i - cnt >= l) {
 			int t = get_kth_digit_double_n(a, b, i - cnt);
 			set_kth_digit_double_n(a, b, i, t);
-		}
+		}	
 		else if (i - cnt == l - 1) set_kth_digit_double_n(a, b, i, flag);
 		else set_kth_digit_double_n(a, b, i, 0);
 	}
@@ -352,7 +361,35 @@ long long Min(long long x, long long y) {
 long long generate_rand(long long l, long long r) {
 	return l + rand() % (r - l + 1);
 }
-
+struct double_n generate_rand_double_n() {
+	struct double_n ret;
+	for (int j = 0; j < NUM_OF_BYTES; j++) {
+		ret.bytes[j] = rand();
+	}
+	int type = rand() % 10;
+	if (type < 2) {//+-denormalized_min
+		set_digit_double_n(&ret, &empty_ex, EXP_MIN, FRAC_MAX, long_to_128(0));
+		if (type & 1) set_kth_digit_double_n(&ret, &empty_ex, 1, 0);
+		else set_kth_digit_double_n(&ret, &empty_ex, 1, 1);
+		set_kth_digit_double_n(&ret, &empty_ex, FRAC_MAX, 1);
+	}
+	else if (type < 4) {//+-normalized_max
+		set_digit_double_n(&ret, &empty_ex, EXP_MIN, EXP_MAX, long_to_128(EXP_MAX_VALUE - 1));
+		set_digit_double_n(&ret, &empty_ex, FRAC_MIN, FRAC_MAX, long_to_128(0ULL - 1ULL));
+		if (type & 1) set_kth_digit_double_n(&ret, &empty_ex, 1, 1);
+		else set_kth_digit_double_n(&ret, &empty_ex, 1, 0);
+	}
+	else if (type == 5) {
+		return NaN_double_n[rand() % 2];
+	}
+	else if (type == 6) {
+		return Inf_double_n[rand() % 2];
+	}
+	else if (type == 7) {
+		return Zero_double_n[rand() % 2];
+	}
+	return ret;
+}
 //main operator
 struct double_n shit(int sign, int E, struct int_128 frac) {
 	int first_one_pos = 0;
@@ -503,16 +540,18 @@ struct double_n mul_n(struct double_n a, struct double_n b) {
 	return shit(sign, ret_E, ret_frac);
 }
 struct double_n div_n(struct double_n a, struct double_n b) {
-	if (is_NaN_double_n(a)) return a;
-	if (is_NaN_double_n(b)) return b;
-	if (is_Inf_double_n(a) && is_Inf_double_n(b)) return NaN_double_n[NEG];
+	int is_NaN_a = is_NaN_double_n(a), is_NaN_b = is_NaN_double_n(b);
+	if (is_NaN_a) return a;
+	if (is_NaN_b) return b;
+	int is_Inf_a = is_Inf_double_n(a), is_Inf_b = is_Inf_double_n(b);
+	if (is_Inf_a && is_Inf_b) return NaN_double_n[NEG];
 	int sign = get_kth_digit_double_n(&a, &empty_ex, 1) ^ get_kth_digit_double_n(&b, &empty_ex, 1);
-	if (is_Inf_double_n(a)) return Inf_double_n[sign];
-	if (is_Inf_double_n(b)) return Zero_double_n[sign];
-	if (is_Inf_double_n(a) && !is_Inf_double_n(b)) return a;
-	if (is_Inf_double_n(b) && !is_Inf_double_n(a)) return b;
-	if (is_Zero_double_n(a) && is_Zero_double_n(b)) return NaN_double_n[NEG];
-	if (is_Zero_double_n(b)) return Inf_double_n[sign];
+	if (is_Inf_a) return Inf_double_n[sign];
+	if (is_Inf_b) return Zero_double_n[sign];
+	int is_Zero_a = is_Zero_double_n(a), is_Zero_b = is_Zero_double_n(b);
+	if (is_Zero_a && is_Zero_b) return NaN_double_n[NEG];
+	if (is_Zero_b) return Inf_double_n[sign];
+	if (is_Zero_a) return Zero_double_n[sign];
 	struct double_n ret;
 	struct ex_bytes a_ex, b_ex, ret_ex;
 	int a_E, b_E, ret_E, a_has_one = 1, b_has_one = 1;
@@ -531,9 +570,7 @@ struct double_n div_n(struct double_n a, struct double_n b) {
 		b_has_one = 0;
 	}
 	int first_one_pos = 0;
-	if (b_has_one) {
-		first_one_pos = FRAC_MIN - 1;
-	}
+	if (b_has_one) first_one_pos = FRAC_MIN - 1;
 	else {
 		for (int i = FRAC_MIN; i <= FRAC_MAX; i++) {
 			if (get_kth_digit_double_n(&b, &b_ex, i) == 1) {
@@ -542,11 +579,23 @@ struct double_n div_n(struct double_n a, struct double_n b) {
 			}
 		}
 	}
-	if (!first_one_pos) return Inf_double_n[0];
 	int left_shift_num = first_one_pos - FRAC_MIN + 1;
 	if (left_shift_num > 0) left_shift_double_n(&b, &b_ex, FRAC_MIN, FRAC_MAX, left_shift_num);
 	b_has_one = 1;
 	b_E -= left_shift_num;
+	if (a_has_one) first_one_pos = FRAC_MIN - 1;
+	else {
+		for (int i = FRAC_MIN; i <= FRAC_MAX; i++) {
+			if (get_kth_digit_double_n(&a, &a_ex, i) == 1) {
+				first_one_pos = i;
+				break;
+			}
+		}
+	}
+	left_shift_num = first_one_pos - FRAC_MIN + 1;
+	if (left_shift_num > 0) left_shift_double_n(&a, &a_ex, FRAC_MIN, FRAC_MAX, left_shift_num);
+	a_has_one = 1;
+	a_E -= left_shift_num;
 	ret_E = a_E - b_E;
 	struct int_128 a_one = long_to_128((unsigned long long) a_has_one);
 	struct int_128 b_one = long_to_128((unsigned long long) b_has_one);
@@ -559,8 +608,9 @@ struct double_n div_n(struct double_n a, struct double_n b) {
 			ret_frac = add_128(ret_frac, pow2_128(EX_MAX - i));
 			a_frac = sub_128(a_frac, b_frac);
 		}
-		right_shift_128(&b_frac, 1);
+		left_shift_128(&a_frac, 1);
 	}
+	if ((a_frac.dig[0] != 0 || b_frac.dig[1] != 0)) ret_frac = add_128(ret_frac, long_to_128(1));
 	return shit(sign, ret_E, ret_frac);
 }
 void init() {
@@ -596,23 +646,29 @@ void check_calc_double(double r_a, double r_b) {
 	r_a_div_b = r_a / r_b;
 	rev_a_div_b = rev_double_n(a_div_b);
 	if (!judge(a_add_b, rev_double(r_a_add_b))) {
-		printf("%23.15e + %23.15e = %23.15e\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_add_b);
-		printf("%23.15e + %23.15e = %23.15e\n", r_a, r_b, r_a_add_b);
+		printf("%23.15le + %23.15le = %23.15le\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_add_b);
+		printf("%23.15le + %23.15le = %23.15le\n", r_a, r_b, r_a_add_b);
 		assert(0);
 	}
 	if (!judge(a_sub_b, rev_double(r_a_sub_b))) {
-		printf("%23.15e - %23.15e = %23.15e\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_sub_b);
-		printf("%23.15e - %23.15e = %23.15e\n", r_a, r_b, r_a_sub_b);
+		printf("%23.15le - %23.15le = %23.15le\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_sub_b);
+		printf("%23.15le - %23.15le = %23.15le\n", r_a, r_b, r_a_sub_b);
 		assert(0);
 	}
 	if (!judge(a_mul_b, rev_double(r_a_mul_b))) {
-		printf("%23.15e * %23.15e = %23.15e\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_mul_b);
-		printf("%23.15e * %23.15e = %23.15e\n", r_a, r_b, r_a_mul_b);
+		printf("%23.15le * %23.15le = %23.15le\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_mul_b);
+		printf("%23.15le * %23.15le = %23.15le\n", r_a, r_b, r_a_mul_b);
+		prt_bit(&a_mul_b, &empty_ex);
+		struct double_n fuck = rev_double(r_a_mul_b);
+		prt_bit(&fuck, &empty_ex);
 		assert(0);
 	}
 	if (!judge(a_div_b, rev_double(r_a_div_b))) {
-		printf("%23.15e / %23.15e = %23.15e\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_div_b);
-		printf("%23.15e / %23.15e = %23.15e\n", r_a, r_b, r_a_div_b);
+		printf("%23.15le / %23.15le = %23.15le\n", *(double*) &rev_a, *(double*) &rev_b, *(double*) &rev_a_div_b);
+		printf("%23.15le / %23.15le = %23.15le\n", r_a, r_b, r_a_div_b);
+		prt_bit(&a_div_b, &empty_ex);
+		struct double_n fuck = rev_double(r_a_div_b);
+		prt_bit(&fuck, &empty_ex);
 		assert(0);
 	}
 }
@@ -655,17 +711,12 @@ void rand_test() {
 	struct double_n rev_a, rev_b, rev_a_add_b, rev_a_sub_b, rev_a_mul_b, rev_a_div_b;
 	double r_a, r_b, r_a_add_b, r_a_sub_b, r_a_mul_b, r_a_div_b;
 	long long test_cnt = 0;
-	//while (1) {
-	for (int i = 0; i < CASES; i++) {
+	while (1) {
+	//for (int i = 0; i < CASES; i++) {
 		test_cnt++;
 		if (test_cnt % 100000 == 0) printf("%lld\n", test_cnt);
-		for (int j = 0; j < NUM_OF_BYTES; j++) {
-			a.bytes[j] = rand();
-			b.bytes[j] = rand();
-		}
-//		set_digit_double_n(&a, &empty_ex, EXP_MIN, FRAC_MAX, long_to_128(0));
-		int a_EXP = _128_to_long(cut_digit_double_n(&a, &empty_ex, EXP_MIN, EXP_MAX));
-		set_digit_double_n(&b, &empty_ex, EXP_MIN, EXP_MAX, long_to_128(generate_rand(Max(0, a_EXP - 10), Min(EXP_MAX_VALUE, a_EXP + 10))));
+		a = generate_rand_double_n();
+		b = generate_rand_double_n();
 		check_calc_double_n(a, b);
 	}
 }
@@ -674,10 +725,8 @@ void generate_input() {
 	output = fopen("double.in", "w");
 	struct double_n a, b;
 	for (int i = 0; i < CASES; i++) {
-		for (int j = 0; j < NUM_OF_BYTES; j++) {
-			a.bytes[j] = rand();
-			b.bytes[j] = rand();
-		}
+		a = generate_rand_double_n();
+		b = generate_rand_double_n();
 		struct double_n rev_a, rev_b;
 		rev_a = rev_double_n(a);
 		rev_b = rev_double_n(b);
@@ -750,11 +799,43 @@ void my_double_n() {
 			ret = div_n(a, b);
 		}
 		rev_ret = rev_double_n(ret);
-		r_ret = *(double*) &rev_ret;
-		fprintf(output0, "%le\n", r_ret);
-		fprintf(output1, "%.50le\n", r_ret);
+		fprintf(output0, "%le\n", *(double*) &rev_ret);
+		fprintf(output1, "%.50le\n", *(double*) &rev_ret);
 	}
 	fclose(input);
 	fclose(output0);
 	fclose(output1);
+}
+void extra_test() {
+	double r_a, r_b, r_ret;
+	struct double_n a, b, ret, rev_ret;
+	char s[10];
+	printf("Please input the expression(input \"0 v 0\" to exit):\n");
+	scanf("%lf%s%lf", &r_a, s, &r_b);
+	a = rev_double(r_a);
+	b = rev_double(r_b);
+	if (s[0] == '+') {
+		ret = add_n(a, b);
+		r_ret = r_a + r_b;
+	}
+	if (s[0] == '-') {
+		ret = sub_n(a, b);
+		r_ret = r_a - r_b;
+	}
+	if (s[0] == '*') {
+		ret = mul_n(a, b);
+		r_ret = r_a * r_b;
+	}
+	if (s[0] == '/') {
+		ret = div_n(a, b);
+		r_ret = r_a / r_b;
+	}
+	if (s[0] == 'v') return;
+	rev_ret = rev_double_n(ret);
+	printf("c_double0  : %le\n", r_ret);
+	printf("my_double0 : %le\n", *(double*) &rev_ret);
+	printf("c_double1  : %.50le\n", r_ret);
+	printf("my_double1 : %.50le\n", *(double*) &rev_ret);
+	extra_test();
+	return;
 }
