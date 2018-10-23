@@ -9,11 +9,10 @@ all : tmp clean bin shared
 tmp :
 	mkdir -p tmp
 
-bin : $(OBJ_MAIN) double_t_test
+bin : tmp $(OBJ_MAIN) double_t_test
+shared: tmp $(OBJ_NO_MAIN) double_t_test.so
 
-shared: $(OBJ_NO_MAIN) double_t_test.so
-
-gen :
+gen : 
 	$(RM) gen
 	$(CC) $(CFLAGS) gen.c -o gen
 
@@ -22,10 +21,11 @@ c_builtin :
 	$(CC) $(CFLAGS) c_builtin_double.c -o c_builtin_double
 
 $(OBJ_MAIN) : tmp/%.o : src/%.c
-	$(CC) -DUSE_MAIN $(CFLAGS) -c $^ -o $@
+	$(CC) -DUSE_MAIN -DNO_ASM $(CFLAGS) -c $^ -o $@
 
 $(OBJ_NO_MAIN) : tmp/no_main_%.o : src/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@
+
 
 double_t_test : $(OBJ_MAIN)
 	$(CC) $(CFLAGS) $^ -o $@
