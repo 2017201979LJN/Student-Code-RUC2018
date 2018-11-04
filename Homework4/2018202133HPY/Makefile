@@ -1,10 +1,17 @@
-all : clean main generator
+override CFLAGS=-mno-red-zone -Wall -Wextra
 
-main :
-	$(CC) src/expr_reader.c src/main.c src/expr_compiler.c -O0 -g -o main -Wall -Wextra
+all : generator compiler
 
-generator : 
-	$(CC) src/generator.c -O2 -o generator -Wall -Wextra
+test : all
+	python3 test.py
 
-clean :
-	$(RM) generator main
+generator :
+	$(CC) $(CFLAGS) src/generator.c -o bin/generator
+
+compiler :
+	$(CC) $(CFLAGS) src/compiler.c -o bin/compiler
+
+clean : 
+	$(RM) bin/* tmp/*
+
+.PHONY : clean

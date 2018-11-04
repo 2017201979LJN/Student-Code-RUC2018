@@ -1,29 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "expr_compiler.h"
-#include "expr_reader.h"
+long long QAQ(long long x1, long long x2, long long x3, long long x4, long long x5);
 
-int      top = 0;
-factor_t factors[1024];
-
-int main(void)
+int main(int argc, char** argv)
 {
-    for (;;) {
-        factors[top] = getNextFactor();
-
-        printf("%d#%d ", factors[top].type, (int)factors[top].op);
-
-        if (factors[top].type == FACTOR_EOF)
-            break;
-
-        top++;
-    }
-
-    puts("");
-    factor_t* p = factors;
-
-    while (p->type != FACTOR_EOF) {
-        compile_expr(&p);
-    }
+    srand(atoi(argv[1]));
+    printf("%lld\n", rand(), rand(), rand(), rand(), rand());
     return 0;
 }
