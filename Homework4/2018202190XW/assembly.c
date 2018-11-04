@@ -96,6 +96,7 @@ int main() {
 	push_callee_saved();
 	work(state, num_of_state, num_of_parameter);
 	pop_callee_saved();
+	puts("\tretq");
 	return 0;
 }
 
