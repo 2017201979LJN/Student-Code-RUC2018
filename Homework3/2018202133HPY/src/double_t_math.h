@@ -4,6 +4,6 @@
 
 #include "double_t.h"
 
-DOUBLET sin_doubleT(DOUBLET x);
+#warning 咕咕咕
 
 #endif
