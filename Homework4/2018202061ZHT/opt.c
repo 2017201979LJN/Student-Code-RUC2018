@@ -77,32 +77,33 @@ int main () {
 			}
 			if (t2 == 2){
 				if (t3 == 2) {
-					printf ("movq (%rsp, %d) %rdx\n", pos (x2));
-					printf ("movq (%rsp, %d) %rax\n", pos (x3));
+					printf ("movq %d(%rsp) %rdx\n", pos (x2));
+					printf ("movq %d(%rsp) %rax\n", pos (x3));
 					if (op == 1) printf ("addq ");
 					else printf ("imulq ");
 					puts ("%rdx %rax");
-					printf ("movq %rax (%rsp, %d)\n", pos (x1));
+					printf ("movq %rax %d(%rsp)\n", pos (x1));
 				}
 				else {
-					printf ("movq (%rsp, %d) %rax\n", pos (x2));
+					printf ("movq %d(%rsp) %rax\n", pos (x2));
 					if (op == 1) printf ("addq ");
 					else printf ("imulq ");
 					printf ("$%lld %rax\n", x3);
-					printf ("movq %rax (%rsp, %d)\n", pos (x1));
+					printf ("movq %rax %d(%rsp)\n", pos (x1));
 				}
 			}
 			else {
-				printf ("movq (%rsp, %d) %rax\n", pos (x3));
+				printf ("movq %d(%rsp) %rax\n", pos (x3));
 				if (op == 1) printf ("addq ");
 				else printf ("imulq ");
 				printf ("$%lld %rax\n", x2);
-				printf ("movq %rax (%rsp, %d)\n", pos (x1));
+				printf ("movq %rax %d(%rsp)\n", pos (x1));
 			}
 		}
 		if (ty == 1) {
 			puts ("calc:");
-			puts ("pushq %rsp");
+			puts ("pushq %rbp");
+			puts ("movq %rsp %rbp");
 		}
 		if (ty == 3) {
 			int i = 0;
@@ -111,8 +112,8 @@ int main () {
 			while (i < n && s[i] == ' ') i++;
 			i++;
 			int xi = s[i] - '0';
-			printf ("movq (%rsp, %d) %rax\n", pos (xi));
-			puts ("popq %rsp");
+			printf ("movq %d(%rsp) %rax\n", pos (xi));
+			puts ("popq %rbp");
 			puts ("ret");
 		}
 	}
