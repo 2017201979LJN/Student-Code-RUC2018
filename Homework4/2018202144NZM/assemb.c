@@ -10,6 +10,7 @@
 #define BUF_SIZE 100
 #define WORD_LEN 20
 #define SIZE_OF_BYTES 8
+#define REG_NUM 5
 
 #define swap(a,b) (a) ^= (b) ^= (a) ^= (b)
 
@@ -26,6 +27,7 @@ struct trie_node {
 
 char RBP[REG_LEN] = "%rbp", RSP[REG_LEN] = "%rsp", RAX[REG_LEN] = "%rax";
 char PUSH[ORDER_LEN] = "pushq   ", POP[ORDER_LEN] = "popq    ", MOV[ORDER_LEN] = "movq    ", ADDQ[ORDER_LEN] = "addq    ", IMUL[ORDER_LEN] = "imulq   ";
+char REG[REG_NUM][REG_LEN] = {"%rbx", "%r12", "%r13", "%r14", "%r15"};
 
 void push_stack()
 {
@@ -95,6 +97,14 @@ int get_index (char *str, int cur_node, int cur_char, int is_num, int len)
     return get_index (str, trie[cur_node].ch[ch], cur_char + 1, is_num, len);
 }
 
+void printreg(int val)
+{
+    if(val <= 5)
+        printf ("%s", &REG[val - 1][0]);
+    else
+        printf ("-%d(%s)", (val - 5) * SIZE_OF_BYTES, RBP);
+}
+
 void trans_express (char *express)
 {
     char ch, str[WORD_LEN];
@@ -125,32 +135,54 @@ void trans_express (char *express)
             str[str_len++] = ch;
     }
     if (!var2) {
-        if (var1 < MAX_NUM)
-            printf ("%s$%d, -%d(%s)\n", MOV, var1, SIZE_OF_BYTES * var, RBP);
-        else
-            printf ("%s-%d(%s), -%d(%s)\n", MOV, SIZE_OF_BYTES * (var1 - MAX_NUM), RBP, SIZE_OF_BYTES * var, RBP);
+        if (var1 < MAX_NUM) {
+            printf ("%s$%d, ", MOV, var1);
+            printreg (var);
+            printf ("\n");
+        }
+        else {
+            printf ("%s", MOV);
+            printreg (var1 - MAX_NUM);
+            printf (", ");
+            printreg (var);
+            printf ("\n");
+        }
         return;
     }
     if (var1 - MAX_NUM == var)
         swap(var1, var2);
     if (var2 - MAX_NUM == var) {
-        if (var1 < MAX_NUM)
-            printf ("$%d, -%d(%s)\n", oper == 1 ? ADDQ : IMUL, var1, SIZE_OF_BYTES * var, RBP);
-        else
-            printf ("%s-%d(%s), -%d(%s)\n", oper == 1 ? ADDQ : IMUL, SIZE_OF_BYTES * (var1 - MAX_NUM), RBP, SIZE_OF_BYTES * var, RBP);
+        if (var1 < MAX_NUM) {
+            printf ("%s$%d, ", oper == 1 ? ADDQ : IMUL, var1);
+            printreg (var);
+            printf ("\n");
+        }
+        else {
+            printf ("%s", oper == 1 ? ADDQ : IMUL);
+            printreg (var1 - MAX_NUM);
+            printf (", ");
+            printreg (var);
+            printf ("\n");
+        }
         return;
     }
     if (var2 < MAX_NUM)
         swap(var1, var2);
     var2 -= MAX_NUM;
-    printf ("%s-%d(%s), %s\n", MOV, SIZE_OF_BYTES * var2, RBP, RAX);
+    printf ("%s", MOV);
+    printreg (var2);
+    printf (", %s\n", RAX);
     if (var1 > MAX_NUM) {
         var1 -= MAX_NUM;
-        printf ("%s-%d(%s), %s\n", oper == 1 ? ADDQ : IMUL, SIZE_OF_BYTES * var1, RBP, RAX);
+        printf ("%s", oper == 1 ? ADDQ : IMUL);
+        printreg (var1);
+        printf (", %s\n", RAX);
     }
     else
         printf ("%s$%d, %s\n", oper == 1 ? ADDQ : IMUL, var1, RAX);
-    printf ("%s%s, -%d(%s)\n", MOV, RAX, SIZE_OF_BYTES * var, RBP);
+    printf ("%s%s, ", MOV, RAX);
+    printreg (var);
+    printf ("\n");
 }
 
 int main()
