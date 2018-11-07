@@ -26,7 +26,7 @@ int main(void)
         return 0;
     }
     else if (x < 1e-3) {
-        fprintf(stderr, "[WARNING] FLOATING POINT ERROE DETECTED\n");
+        fprintf(stderr, "[WARNING] FLOATING POINT ERROR DETECTED\n");
         return 0;
     }
     else {
