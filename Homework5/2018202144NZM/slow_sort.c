@@ -6,46 +6,39 @@
 
 #define min(a,b) (a) < (b) ? (a) : (b)
 
-int aa[10000];
+#define gettype(a) (a == 4) ? 0 : (a == 8) ? 1 : 2
 
-int cmp (void *a, void *b) {
+int aa[1000000];
+
+int cmp (const void *a, const void *b) {
     return *(int *)a - *(int *)b;
 }
 
-static inline void swap_t (void *v1, void *v2, int ele_size)
+static inline void swap_t (void *v1, void *v2, int swaptype, int ele_size)
 {
-    if (ele_size == 1) {
-        char temp = *(char *)v1;
-        *(char *)v1 = *(char *)v2;
-        *(char *)v2 = temp;
-    }
-    else if (ele_size == 2) {
-        short temp = *(short *)v1;
-        *(short *)v1 = *(short *)v2;
-        *(short *)v2 = temp;
-    }
-    else if (ele_size == 4) {
+    if (swaptype == 0) {
         int temp = *(int *)v1;
         *(int *)v1 = *(int *)v2;
         *(int *)v2 = temp;
     }
-    else if (ele_size == 8) {
+    else if (swaptype == 1) {
         long long temp = *(long long *)v1;
         *(long long *)v1 = *(long long *)v2;
         *(long long *)v2 = temp;
     }
-    else
-    {
-        char *tail = v1 + ele_size, *head1 = v1, *head2 = v2;
+    else {
+        char *tail = (char *)v1 + ele_size, *head1 = (char *)v1, *head2 = (char *)v2;
+        long long temp;
         for ( ; head1 + SIZE_OF_BYTES <= tail; head1 += SIZE_OF_BYTES, head2 += SIZE_OF_BYTES) {
-            long long temp = *(long long *)head1;
+            temp = *(long long *)head1;
             *(long long *)head1 = *(long long *)head2;
             *(long long *)head2 = temp;
         }
-        if (head1 != tail) {
-            int temp = *(int *)head1;
-            *(int *)head1 = *(int *)head2;
-            *(int *)head2 = temp;
+        char temp_ch;
+        for ( ; head1 < tail; head1 ++, head2 ++) {
+            temp_ch = *head1;
+            *head1 = *head2;
+            *head2 = temp_ch;
         }
     }
 }
@@ -58,13 +51,13 @@ static inline char *getmid (char *l, char *mid, char *r, int (*cmp) (const void 
 void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const void *, const void *) )
 {
     char *head, *tail, *head1, *tail1, *head2, *tail2, *maxp, *mid;
-    int swap_size, block_size, cmp_res, swap_cnt;
+    int swap_size, block_size, cmp_res, swap_cnt, swaptype = gettype(ele_size);
     loop:
          if (arr_size < 7) {
             maxp = (char *)a + arr_size * ele_size;
             for (head = (char *)a + ele_size; head < maxp; head += ele_size)
                 for (tail = head; tail > (char *)a && cmp(tail - ele_size, tail) > 0; tail -= ele_size)
-                    swap_t(tail - ele_size, tail, ele_size);
+                    swap_t(tail - ele_size, tail, swaptype, ele_size);
             return;
          }
          mid = (char *)a + (arr_size / 2) * ele_size;
@@ -79,14 +72,14 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
             }
             mid = getmid (head, mid, tail, cmp);
          }
-         swap_t(a, mid, ele_size);
+         swap_t(a, mid, swaptype, ele_size);
          head1 = (char *)a + ele_size, head2 = (char *)a + (arr_size - 1) * ele_size;
          tail1 = head1, tail2 = head2;
          swap_cnt = 0;
          while (1) {
             while (tail1 <= head2 && (cmp_res = cmp (tail1, a) ) <= 0) {
                 if (cmp_res == 0) {
-                    swap_t (head1, tail1, ele_size);
+                    swap_t (head1, tail1, swaptype, ele_size);
                     swap_cnt = 1;
                     head1 += ele_size;
                 }
@@ -94,7 +87,7 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
             }
             while (tail1 <= head2 && (cmp_res = cmp (head2, a) ) >= 0) {
                 if (cmp_res == 0) {
-                    swap_t (head2, tail2, ele_size);
+                    swap_t (head2, tail2, swaptype, ele_size);
                     swap_cnt = 1;
                     tail2 -= ele_size;
                 }
@@ -102,21 +95,21 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
             }
             if (tail1 > head2)
                 break;
-            swap_t (tail1, head2, ele_size);
+            swap_t (tail1, head2, swaptype, ele_size);
             swap_cnt = 1;
             tail1 += ele_size;
             head2 -= ele_size;
          }
          tail = (char *)a + arr_size * ele_size;
-         swap_size = min (head1 - (char *)a, tail1 - head1);
-         swap_t (a, tail1 - swap_size, swap_size);
-         swap_size = min (tail2 - head2, tail - tail2 - ele_size);
-         swap_t (tail1, tail - swap_size, swap_size);
+         swap_size = min(head1 - (char *)a, tail1 - head1);
+         swap_t (a, tail1 - swap_size, 2, swap_size);
+         swap_size = min(tail2 - head2, tail - tail2 - ele_size);
+         swap_t (tail1, tail - swap_size, 2, swap_size);
          if (swap_cnt == 0) {
             swap_size = 1 + arr_size / 4;
             for (mid = (char *)a + ele_size; mid < (char *)a + arr_size * ele_size; mid += ele_size) {
                 for (head = mid; head > (char *)a && cmp (head, head - ele_size) < 0; head -= ele_size) {
-                    swap_t (head, head - ele_size, ele_size);
+                    swap_t (head, head - ele_size, swaptype, ele_size);
                     if (++swap_cnt > swap_size)
                         goto insert_out;
                 }
@@ -130,13 +123,14 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
          if (swap_size > ele_size) {
             a = tail - swap_size;
             arr_size = swap_size / ele_size;
+            goto loop;
          }
-     goto loop;
 }
 
 int main()
 {
     freopen ("sort.in", "r", stdin);
+    freopen ("sort.out", "w", stdout);
     int n;
     scanf ("%d", &n);
     for (int i = 0; i < n; i++)
