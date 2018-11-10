@@ -8,12 +8,6 @@
 
 #define gettype(a) (a == 4) ? 0 : (a == 8) ? 1 : 2
 
-int aa[1000000];
-
-int cmp (const void *a, const void *b) {
-    return *(int *)a - *(int *)b;
-}
-
 static inline void swap_t (void *v1, void *v2, int swaptype, int ele_size)
 {
     if (swaptype == 0) {
@@ -125,18 +119,4 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
             arr_size = swap_size / ele_size;
             goto loop;
          }
-}
-
-int main()
-{
-    freopen ("sort.in", "r", stdin);
-    freopen ("sort.out", "w", stdout);
-    int n;
-    scanf ("%d", &n);
-    for (int i = 0; i < n; i++)
-        scanf ("%d", aa + i);
-    slow_sort (aa, n ,4, cmp);
-    for (int i = 0; i < n; i++)
-        printf ("%d ", aa[i]);
-    return 0;
 }
