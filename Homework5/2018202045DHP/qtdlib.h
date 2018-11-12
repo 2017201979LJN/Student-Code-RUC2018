@@ -41,6 +41,7 @@ void ssort (void *base, size_t nelem, size_t width, int (*fcmp) (const void *x, 
 	}
 	swap(base, left, width);
 	left -= width;
+	referv = left + width;
 	if(right > end) {
 		right = end;
 		while(fcmp(end, right) <= 0 && nelem >= 1) {
@@ -51,9 +52,8 @@ void ssort (void *base, size_t nelem, size_t width, int (*fcmp) (const void *x, 
 		return;
 	}
 	
-	referv = left + width;
-	while(left >= base && fcmp(referv, left) <= 0) left -= width;
-	while(right <= end && fcmp(referv, right) >= 0) right += width;
+//	while(left >= base && fcmp(referv, left) == 0) left -= width;
+//	while(right <= end && fcmp(referv, right) == 0) right += width;
 	ssort(base, (left - base) / width + 1, width, fcmp);
 	ssort(right, (end - right) / width + 1, width, fcmp);
 }
