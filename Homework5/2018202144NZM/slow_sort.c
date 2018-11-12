@@ -46,7 +46,7 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
 {
     char *head, *tail, *head1, *tail1, *head2, *tail2, *maxp, *mid;
     int swap_size, block_size, cmp_res, swap_cnt, swaptype = gettype(ele_size);
-    loop:
+    do {
          if (arr_size < 7) {
             maxp = (char *)a + arr_size * ele_size;
             for (head = (char *)a + ele_size; head < maxp; head += ele_size)
@@ -117,6 +117,6 @@ void slow_sort (void *a, size_t arr_size, size_t ele_size, int (*cmp) (const voi
          if (swap_size > ele_size) {
             a = tail - swap_size;
             arr_size = swap_size / ele_size;
-            goto loop;
          }
+     }while(swap_size > ele_size);
 }
