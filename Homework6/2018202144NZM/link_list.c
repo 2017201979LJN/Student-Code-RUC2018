@@ -72,6 +72,8 @@ void swap (link_list *v1, link_list *v2)
 
 void bubble_sort (link_list *head, int mem_num)
 {
+    if (head == NULL)
+        return;
     link_list *p1, *p2;
     int i, j;
     for (i = 1, p1 = head->next; i < mem_num; i++, p1 = p1->next) 
@@ -81,6 +83,8 @@ void bubble_sort (link_list *head, int mem_num)
 
 void print_link_list (link_list *head)
 {
+    if (head == NULL)
+        return;
     for(link_list *i = head; ; i = i->next) {
         printf("%s ", i->name);
         printf("%d\n", i->score);
