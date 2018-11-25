@@ -28,6 +28,7 @@ void prt_movq(int, int);
 void prt_movabsq(long, int);
 void prt_imulq(int, int);
 void prt_addq(int, int);
+void prt_leaq(int, int, int);
 void push_callee_saved();
 void pop_callee_saved();
 
@@ -188,6 +189,15 @@ void prt_addq(int src, int dest) {
 	prt_operand(dest);
 	printf("\n");
 }
+void prt_leaq(int src1, int src2, int dest) {
+	printf("\tleaq\t(");
+	prt_operand(src1);
+	printf(",");
+	prt_operand(src2);
+	printf(") ");
+	prt_operand(dest);
+	printf("\n");
+}
 void work(struct rec state[], int num_of_state, int num_of_parameter) {
 	int get_pos_by_id[MAX_NUM_OF_EXPRESS];
 	int get_id_by_pos[MAX_NUM_OF_EXPRESS];
@@ -258,9 +268,16 @@ void work(struct rec state[], int num_of_state, int num_of_parameter) {
 				}
 			}
 			else if (rst_pos <= MAX_NUM_OF_REGISTER) {
-				prt_movq(get_pos_by_id[state[i].id_of_num1], rst_pos);
-				if (state[i].type_of_op) prt_imulq(get_pos_by_id[state[i].id_of_num2], rst_pos);
-				else prt_addq(get_pos_by_id[state[i].id_of_num2], rst_pos);
+				if (get_pos_by_id[state[i].id_of_num1] <= MAX_NUM_OF_REGISTER &&
+					get_pos_by_id[state[i].id_of_num2] <= MAX_NUM_OF_REGISTER &&
+					state[i].type_of_op == 0) {
+					prt_leaq(get_pos_by_id[state[i].id_of_num1], get_pos_by_id[state[i].id_of_num2], rst_pos);
+				}
+				else {
+					prt_movq(get_pos_by_id[state[i].id_of_num1], rst_pos);
+					if (state[i].type_of_op) prt_imulq(get_pos_by_id[state[i].id_of_num2], rst_pos);
+					else prt_addq(get_pos_by_id[state[i].id_of_num2], rst_pos);
+				}
 				get_pos_by_id[i] = rst_pos;
 				get_id_by_pos[rst_pos] = i;
 				pos_is_used[rst_pos] = 1;
@@ -305,18 +322,18 @@ void work(struct rec state[], int num_of_state, int num_of_parameter) {
 	prt_movq(get_pos_by_id[num_of_state], POS_OF_RAX);
 }
 void push_callee_saved() {
-	puts("\tpushq\t %%r15");
-	puts("\tpushq\t %%r14");
-	puts("\tpushq\t %%r13");
-	puts("\tpushq\t %%r12");
-	puts("\tpushq\t %%rbp");
-	puts("\tpushq\t %%rbx");
+	puts("\tpushq\t%r15");
+	puts("\tpushq\t%r14");
+	puts("\tpushq\t%r13");
+	puts("\tpushq\t%r12");
+	puts("\tpushq\t%rbp");
+	puts("\tpushq\t%rbx");
 }
 void pop_callee_saved() {
-	puts("\tpopq\t %%rbx");
-	puts("\tpopq\t %%rbp");
-	puts("\tpopq\t %%r12");
-	puts("\tpopq\t %%r13");
-	puts("\tpopq\t %%r14");
-	puts("\tpopq\t %%r15");
+	puts("\tpopq\t%rbx");
+	puts("\tpopq\t%rbp");
+	puts("\tpopq\t%r12");
+	puts("\tpopq\t%r13");
+	puts("\tpopq\t%r14");
+	puts("\tpopq\t%r15");
 }
