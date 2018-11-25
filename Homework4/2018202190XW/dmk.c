@@ -10,7 +10,7 @@ int main() {
 	printf("long y%d) {\n", ++cnt);
 	int n = num_of_parameter;
 	int num_of_tmp_var = 0, num_of_express = rand() % (4 * n + 1) + n;
-	num_of_express = 20 * n;//
+	num_of_express = 5 * n;//
 	for (int i = 0; i < num_of_express; i++) {
 		int flag = 1;
 		if (i + 1 != num_of_express) {
