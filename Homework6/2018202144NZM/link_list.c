@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
+#include <stdint.h>
+
 #define STR_LEN 100
 
 typedef struct link_list
@@ -49,6 +50,7 @@ void joseph (link_list *head, int mem_num)
         free(p);
         p = nex;
     }
+    head = NULL;
 }
 
 int cmp (link_list *v1, link_list *v2)
@@ -74,7 +76,7 @@ void bubble_sort (link_list *head, int mem_num)
     int i, j;
     for (i = 1, p1 = head->next; i < mem_num; i++, p1 = p1->next) 
         for (j = i, p2 = p1; j > 0 && cmp(p2, p2->pre) < 0; j--, p2 = p2->pre)
-            swap(p2, p2->pre);
+            swap(p2->pre, p2);
 }
 
 void print_link_list (link_list *head)
@@ -95,5 +97,13 @@ int main()
     bubble_sort(head, n);
     print_link_list(head);
     joseph(head, n);
+    if (head != NULL)
+        head->pre->next = NULL;
+    while (head != NULL) {
+        link_list *nex = head->next;
+        free(head->name);
+        free(head);
+        head = nex;
+    }
     return 0;
 }
