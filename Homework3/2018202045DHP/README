@@ -1,0 +1,24 @@
+This double calculator can finish some ... double calculation (ZX's order worked well)
+In theory ... I do consider some complex situations.
+But I haven't tested or debugged them yet LOL~~~ (one of the senior fellow apprentices told us that's unnecessary LOL)
+I know some formular like ... 1.0/+.23e-8 ... or something like this may make mistakes.
+
+Explanation:
+formular_summon.c : generate some formular in ZX's order and generate a compilable file with name "checker.c"
+Double_Calculator.c : finish the formulars in "Double_Calculator.in"
+checker.c : output the correct number calculated by system double
+summon.h : a head file with some data generator
+
+You just need to:
+compile "formular_summon.c"
+run the executable file
+compile "Double_Calculator.c"
+run the executable file
+compile "checker.c"
+run the executable file
+compare the two ".out" file to ensure if they are absolutely the same.
+
+If you want to type in some your own formulars.
+You need to edit the files : "Double_Calculator.in" "checker.c".
+
+Have fun~
