@@ -3,7 +3,7 @@
 
 void function(const char *input) {
 	char buffer[512];
-	printf("%lu\n", (long *)buffer); // Get buffer address
+	printf("%lu\n", (unsigned long *)buffer); // Get buffer address
 	strcpy(buffer, input); // Overflow here
 }
 
