@@ -6,9 +6,7 @@
 
 int main(void) {
     char buffer[BUFFER_SIZE];
-    printf("%p\n",buffer);
     gets(buffer);
-    asm("int3");
 	return 0;
 }
 
