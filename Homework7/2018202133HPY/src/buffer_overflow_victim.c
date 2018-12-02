@@ -7,6 +7,6 @@
 int main(void) {
     char buffer[BUFFER_SIZE];
     gets(buffer);
-	return 0;
+    return 0;
 }
 
