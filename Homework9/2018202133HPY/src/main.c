@@ -5,64 +5,73 @@
 
 #include "redblack-tree.h"
 
-typedef struct {
+typedef struct
+{
     long long val;
     int num;
     int size;
 } data_t;
 
-void pushup(redblack_tree_t* tree, redblack_tree_node_t* node)
+void pushup(redblack_tree_t *tree, redblack_tree_node_t *node)
 {
-    assert(node == tree->nil || ((data_t*)(node->data))->num != 0);
-    ((data_t*)(node->data))->size = ((data_t*)(node->data))->num + ((data_t*)(node->l->data))->size + ((data_t*)(node->r->data))->size;
+    assert(node == tree->nil || ((data_t *)(node->data))->num != 0);
+    ((data_t *)(node->data))->size = ((data_t *)(node->data))->num + ((data_t *)(node->l->data))->size + ((data_t *)(node->r->data))->size;
 }
 
-int cmp(const void* a, const void* b)
+int cmp(const void *a, const void *b)
 {
-    return ((data_t*)a)->val - ((data_t*)b)->val;
+    return ((data_t *)a)->val - ((data_t *)b)->val;
 }
 
-void Add(long long x, redblack_tree_t* tree)
+void Add(long long x, redblack_tree_t *tree)
 {
-    data_t data = { .val = x, .num = 1, .size = 1 };
+    data_t data = {.val = x, .num = 1, .size = 1};
 
-    redblack_tree_node_t* node;
+    redblack_tree_node_t *node;
 
-    if ((node = rbtree_find(tree, &data)) == tree->nil) {
+    if ((node = rbtree_find(tree, &data)) == tree->nil)
+    {
         rbtree_insert(tree, &data);
-    } else {
-        ((data_t*)(node->data))->num++;
+    }
+    else
+    {
+        ((data_t *)(node->data))->num++;
 
-        while (node != tree->nil) {
+        while (node != tree->nil)
+        {
             rbtree_node_pushup(tree, node);
             node = node->parent;
         }
     }
 }
 
-void Del(long long x, redblack_tree_t* tree)
+void Del(long long x, redblack_tree_t *tree)
 {
-    data_t data = { .val = x, .num = 1, .size = 1 };
+    data_t data = {.val = x, .num = 1, .size = 1};
 
     redblack_tree_node_t *node, *tmp;
 
     node = rbtree_find(tree, &data);
 
-    if (((data_t*)(node->data))->num > 1) {
+    if (((data_t *)(node->data))->num > 1)
+    {
 
-        ((data_t*)(node->data))->num--;
+        ((data_t *)(node->data))->num--;
 
         tmp = node;
-        while (tmp != tree->nil) {
+        while (tmp != tree->nil)
+        {
             rbtree_node_pushup(tree, tmp);
             tmp = tmp->parent;
         }
-    } else {
+    }
+    else
+    {
         rbtree_erase(tree, node);
     }
 }
 
-int check_tree_size(redblack_tree_t* tree, redblack_tree_node_t* node)
+int check_tree_size(redblack_tree_t *tree, redblack_tree_node_t *node)
 {
     if (node == tree->nil)
         return 1;
@@ -71,112 +80,131 @@ int check_tree_size(redblack_tree_t* tree, redblack_tree_node_t* node)
     return check_tree_size(tree, node->l) && check_tree_size(tree, node->r);
 }
 
-int check_tree_data(redblack_tree_t* tree, redblack_tree_node_t* node)
+int check_tree_data(redblack_tree_t *tree, redblack_tree_node_t *node)
 {
     if (node == tree->nil)
         return 1;
-    assert(((data_t*)(node->data))->size == ((data_t*)(node->data))->num + ((data_t*)(node->l->data))->size + ((data_t*)(node->r->data))->size);
+    assert(((data_t *)(node->data))->size == ((data_t *)(node->data))->num + ((data_t *)(node->l->data))->size + ((data_t *)(node->r->data))->size);
 
     return check_tree_data(tree, node->l) && check_tree_data(tree, node->r);
 }
 
-long long Kth(int k, redblack_tree_t* tree)
+long long Kth(int k, redblack_tree_t *tree)
 {
-    redblack_tree_node_t* now = tree->root;
+    redblack_tree_node_t *now = tree->root;
 
-    for (;;) {
-        if (k <= ((data_t*)(now->l->data))->size) {
+    for (;;)
+    {
+        if (k <= ((data_t *)(now->l->data))->size)
+        {
             now = now->l;
-        } else {
-            k -= ((data_t*)(now->l->data))->size;
-            if (k <= ((data_t*)(now->data))->num) {
-                return ((data_t*)now->data)->val;
-            } else {
-                k -= ((data_t*)(now->data))->num;
+        }
+        else
+        {
+            k -= ((data_t *)(now->l->data))->size;
+            if (k <= ((data_t *)(now->data))->num)
+            {
+                return ((data_t *)now->data)->val;
+            }
+            else
+            {
+                k -= ((data_t *)(now->data))->num;
                 now = now->r;
             }
         }
     }
 }
 
-int getLessThanNumNode(long long x, redblack_tree_node_t* node, redblack_tree_t* tree)
+int getLessThanNumNode(long long x, redblack_tree_node_t *node, redblack_tree_t *tree)
 {
     if (node == tree->nil)
         return 0;
 
     int ret = 0;
-    data_t data = { .val = x, .num = 1, .size = 1 };
+    data_t data = {.val = x, .num = 1, .size = 1};
     int flag = tree->cmp(node->data, &data);
 
-    if (flag > 0) {
+    if (flag > 0)
+    {
         ret = getLessThanNumNode(x, node->l, tree);
-    } else if (flag < 0) {
-        ret = ((data_t*)node->l->data)->size + ((data_t*)node->data)->num;
+    }
+    else if (flag < 0)
+    {
+        ret = ((data_t *)node->l->data)->size + ((data_t *)node->data)->num;
         ret += getLessThanNumNode(x, node->r, tree);
-    } else {
-        ret = ((data_t*)node->l->data)->size;
+    }
+    else
+    {
+        ret = ((data_t *)node->l->data)->size;
     }
 
     return ret;
 }
 
-int getLessThanNum(long long x, redblack_tree_t* tree)
+int getLessThanNum(long long x, redblack_tree_t *tree)
 {
     return getLessThanNumNode(x, tree->root, tree);
 }
 
-int getGreaterThanNumNode(long long x, redblack_tree_node_t* node, redblack_tree_t* tree)
+int getGreaterThanNumNode(long long x, redblack_tree_node_t *node, redblack_tree_t *tree)
 {
     if (node == tree->nil)
         return 0;
 
     int ret = 0;
-    data_t data = { .val = x, .num = 1, .size = 1 };
+    data_t data = {.val = x, .num = 1, .size = 1};
     int flag = tree->cmp(node->data, &data);
 
-    if (flag < 0) {
+    if (flag < 0)
+    {
         ret = getGreaterThanNumNode(x, node->r, tree);
-    } else if (flag > 0) {
-        ret = ((data_t*)node->r->data)->size + ((data_t*)node->data)->num;
+    }
+    else if (flag > 0)
+    {
+        ret = ((data_t *)node->r->data)->size + ((data_t *)node->data)->num;
         ret += getGreaterThanNumNode(x, node->l, tree);
-    } else {
-        ret = ((data_t*)node->r->data)->size;
+    }
+    else
+    {
+        ret = ((data_t *)node->r->data)->size;
     }
 
     return ret;
 }
 
-int getGreaterThanNum(long long x, redblack_tree_t* tree)
+int getGreaterThanNum(long long x, redblack_tree_t *tree)
 {
     return getGreaterThanNumNode(x, tree->root, tree);
 }
 
-long long getMaxLessThan(long long x, redblack_tree_t* tree)
+long long getMaxLessThan(long long x, redblack_tree_t *tree)
 {
-    data_t data = { .val = x, .num = 1, .size = 1 };
-    redblack_tree_node_t* node = rbtree_less(tree, &data);
+    data_t data = {.val = x, .num = 1, .size = 1};
+    redblack_tree_node_t *node = rbtree_less(tree, &data);
 
-    return node == tree->nil ? -1 : ((data_t*)(node->data))->val;
+    return node == tree->nil ? -1 : ((data_t *)(node->data))->val;
 }
 
-long long getMinGreaterThan(long long x, redblack_tree_t* tree)
+long long getMinGreaterThan(long long x, redblack_tree_t *tree)
 {
-    data_t data = { .val = x, .num = 1, .size = 1 };
-    redblack_tree_node_t* node = rbtree_greater(tree, &data);
+    data_t data = {.val = x, .num = 1, .size = 1};
+    redblack_tree_node_t *node = rbtree_greater(tree, &data);
 
-    return node == tree->nil ? -1 : ((data_t*)(node->data))->val;
+    return node == tree->nil ? -1 : ((data_t *)(node->data))->val;
 }
 
-void dfs_rbtree_node_data_t(redblack_tree_t* tree, redblack_tree_node_t* node)
+void dfs_rbtree_node_data_t(redblack_tree_t *tree, redblack_tree_node_t *node)
 {
-    if (node->l != tree->nil) {
+    if (node->l != tree->nil)
+    {
         assert(node->l->parent == node);
         dfs_rbtree_node_data_t(tree, node->l);
     }
 
-    printf("(%d %lld %d)\n", ((data_t*)(node->data))->num, ((data_t*)(node->data))->val, ((data_t*)(node->data))->size);
+    printf("(%d %lld %d)\n", ((data_t *)(node->data))->num, ((data_t *)(node->data))->val, ((data_t *)(node->data))->size);
 
-    if (node->r != tree->nil) {
+    if (node->r != tree->nil)
+    {
         assert(node->r->parent == node);
         dfs_rbtree_node_data_t(tree, node->r);
     }
@@ -186,14 +214,15 @@ int main(void)
 {
     redblack_tree_t tree = CONSTRUCT_RBTREE(data_t, cmp, pushup);
 
-    ((data_t*)(tree.nil->data))->size = 0;
-    ((data_t*)(tree.nil->data))->val = 0;
+    ((data_t *)(tree.nil->data))->size = 0;
+    ((data_t *)(tree.nil->data))->val = 0;
 
     long long n, x, y;
 
     scanf("%lld", &n);
 
-    for (int i = 1; i <= n; i++) {
+    for (int i = 1; i <= n; i++)
+    {
         scanf("%lld %lld", &x, &y);
 
         check_tree_size(&tree, tree.root);
@@ -201,7 +230,8 @@ int main(void)
 
         fprintf(stderr, "[%d] %lld %lld\n", i, x, y);
 
-        switch (x) {
+        switch (x)
+        {
         case 0:
             Add(y, &tree);
             break;
@@ -222,6 +252,12 @@ int main(void)
             break;
         }
     }
+
+    size_t getSiz();
+
+    rbtree_free(&tree);
+
+    printf("%zu\n", getSiz());
 
     return 0;
 }
