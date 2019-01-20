@@ -1,0 +1,3 @@
+main.c是压缩程序，solve.c是解压和check的程序，datamaker.c是数据生成器。
+先make main,make datamaker,make solve。
+之后make run,配对时输出AC，否则输出WA。
