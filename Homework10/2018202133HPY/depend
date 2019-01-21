@@ -1,0 +1,4 @@
+bitio.o: src/bitio.c src/bitio.h
+main.o: src/main.c src/bitio.h src/zip.h
+tree.o: src/tree.c src/tree.h src/zip.h
+zip.o: src/zip.c src/zip.h src/bitio.h src/tree.h
