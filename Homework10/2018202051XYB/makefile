@@ -1,14 +1,18 @@
 .PHONY : clean
 
 main : main.o splay.o compression.o
-	@gcc -o run main.o splay.o compression.o -lz
+	@gcc data_gen.c -o data_gen
+	./data_gen
+	rm ./data_gen
+	bash ./res/load_libs.sh
+	@gcc -g -o run main.o splay.o compression.o ./libz.a
+	# @gcc -g -o run main.o splay.o compression.o -lz
 main.o : main.c
-	@gcc -c main.c -lz
+	@gcc -g -c main.c
 splay.o : splay.c
-	@gcc -c splay.c
+	@gcc -g -c splay.c
 compression.o : compression.c
-	@gcc -c compression.c -lz
+	@gcc -g -c compression.c
 clean :
 	@rm -f *.o
-init:
-	sudo apt install zlib1g-dev
+	@rm -f libz.a libz.so data.in run
