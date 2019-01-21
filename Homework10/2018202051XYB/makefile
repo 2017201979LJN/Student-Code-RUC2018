@@ -10,3 +10,5 @@ compression.o : compression.c
 	@gcc -c compression.c -lz
 clean :
 	@rm -f *.o
+init:
+	sudo apt install zlib1g-dev
