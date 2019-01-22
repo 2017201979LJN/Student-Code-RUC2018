@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "zip.h"
 
 #define DATA_SIZE 1000000
 #define MAX_DIS 32768
@@ -20,38 +21,44 @@ struct edge
 	int v, next;
 }e[DATA_SIZE];
 
-unsigned char inhuff[DATA_SIZE], outhuff[DATA_SIZE] = {0};
-int n, head[DATA_SIZE], edge_cnt = 0;
+static unsigned char outhuff[DATA_SIZE] = {0};
+unsigned char zip_mp[SIZE_OF_CHAR] = {0}, inhuff[DATA_SIZE] = {0};
+int zip_size;
+static int n, head[DATA_SIZE], edge_cnt = 0;
 
-void insert(int v1, int v2)
+static void insert(int v1, int v2)
 {
 	e[++edge_cnt].v = v2;
 	e[edge_cnt].next = head[v1];
 	head[v1] = edge_cnt;
 }
 
-void dfs(int x,int fa, int dep)
+static void dfs(int x,int fa, int dep)
 {
+	int ch = 0;
 	for (int i = head[x]; i; i = e[i].next) {
-		dfs(e[i].v, x, dep + 1);
+		dfs(e[i].v, x, (dep << 1) + ch);
+		ch++;
 	}
 	if (!head[x]) {
 		huff[x].v = dep;
 		huff[x].id = x;
+		zip_mp[dep] = x;
 	}
 }
 
-int cmp(const void *v1, const void *v2)
+static int cmp(const void *v1, const void *v2)
 {
 	return ((struct pair *)v1)->v > ((struct pair *)v2)->v;	
 }
 
-int main()
+void zip(char *filename, char *output)
 {
-	FILE *fp = fopen("zip.in", "r");
+	FILE *fp = fopen(filename, "r");
 	n = 0;
 	while (fread(inhuff + n, 1, 1, fp))
 		n++;
+	zip_size = n;
 	for (int i = 0; i < SIZE_OF_ASC; i++) {
 		char_cnt[i].id = i;
 		char_cnt[i].v = 0;
@@ -102,7 +109,33 @@ int main()
 	}
 	if (out_cnt != 3)
 		out_pos++;
-	fp = fopen("splay.zip", "w");
+	fp = fopen(output, "w");
 	fwrite(outhuff, 1, out_pos, fp);
-	return 0;
+}
+
+static char incode[DATA_SIZE] = {0};
+
+void decode(char *input, char *output)
+{
+	FILE *fp = fopen(input, "r");
+	FILE *fp2 = fopen(output, "w");
+	int n = 0;
+	while (fread(incode + n, 1, 1, fp))
+		n++;
+	int encode = 0, pos = -1, _pos = 3;
+	for (int i = 0; i < n; i++) {
+		if (i % 4 == 0)
+			pos++;
+		encode = (encode << 1);
+		if (incode[pos] & (1 << _pos))
+			encode++;
+		if (zip_mp[encode]) {
+			fputc(zip_mp[encode], fp2);
+			encode = 0;
+		}
+		_pos--;
+		_pos = (_pos + 4) % 4;
+	}
+	for (int i = 0; i < zip_size; i++)
+		fputc(inhuff[i], fp2);
 }
