@@ -1,0 +1,1 @@
+makedata数据生成器 main压缩数据 check检查压缩结果与原树是否相同
